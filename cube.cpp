@@ -1,18 +1,30 @@
 #include "cube.h"
 #include <QOpenGLShaderProgram>
+#include <QDebug>
 
 Cube::Cube() :
     m_vertexBuffer(QOpenGLBuffer::VertexBuffer),
+    m_colorBuffer(QOpenGLBuffer::VertexBuffer),
     m_texture(QOpenGLTexture::Target2D)
 {
     initializeOpenGLFunctions();
-    m_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-    m_vertexBuffer.create();
+    initialize();
 }
 
 Cube::~Cube() {
     m_vertexBuffer.destroy();
+    m_colorBuffer.destroy();
     delete [] m_vertices;
+}
+
+void Cube::initialize() {
+    // Color
+    for (int i =0; i < 6; ++i) {
+        m_color[i] = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
+    }
+
+    // Model Matrix
+    m_modelMatrix.setToIdentity();
 }
 
 void Cube::generateVertices(double length) {
@@ -94,43 +106,76 @@ void Cube::generateVertices(double length) {
     m_vertices[35].set(positions[1], normals[0], texCoords[2]);
 
     // Vertex Buffer
-
+    m_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    m_vertexBuffer.create();
     m_vertexBuffer.bind();
     m_vertexBuffer.allocate(m_vertices, 6 * 2 * 3 * sizeof(Vertex));
     m_vertexBuffer.release();
 }
 
-void Cube::setPosition(QVector3D translation) {
-    m_modelMatrix.setToIdentity();
+void Cube::generateColorBuffer() {
+    QVector3D *colors = new QVector3D[6 * 2 * 3];
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            colors[6 * i + j] = m_color[i];
+        }
+    }
+
+    // Color Buffer
+    m_colorBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    m_colorBuffer.create();
+    m_colorBuffer.bind();
+    m_colorBuffer.allocate(colors, 6 * 2 * 3 * sizeof(QVector3D));
+    m_colorBuffer.release();
+
+}
+
+void Cube::translate(QVector3D translation) {
     m_modelMatrix.translate(translation);
+}
+
+void Cube::setFacetColor(QChar facet, QVector3D color) {
+    const QString facets_order = "FBUDLR";
+    m_color[facets_order.indexOf(facet)] = color;
 }
 
 void Cube::render(Shader* shader) {
     QOpenGLShaderProgram* program = shader->getProgram();
-    program->bind();
-    m_vertexBuffer.bind();
 
     int s_positionLoc = program->attributeLocation("position"),
         s_normalLoc = program->attributeLocation("normal"),
-        s_texCoordLoc = program->attributeLocation("texCoord");
+        s_texCoordLoc = program->attributeLocation("texCoord"),
+        s_colorLoc = program->attributeLocation("color");
+
+    program->bind();
 
     // Data buffer
+    m_vertexBuffer.bind();
     int offset = 0;
     setVertexAttribute(program, s_positionLoc, GL_FLOAT, 3, offset);
-    offset += 3 * sizeof( GLfloat );
+    offset += 3 * sizeof(GLfloat);
     setVertexAttribute(program, s_normalLoc, GL_FLOAT, 3, offset);
-    offset += 3 * sizeof( GLfloat );
+    offset += 3 * sizeof(GLfloat);
     setVertexAttribute(program, s_texCoordLoc, GL_FLOAT, 2, offset);
+    m_vertexBuffer.release();
+
+    m_colorBuffer.bind();
+    setColorAttribute(program, s_colorLoc, GL_FLOAT, 3, 0);
+    m_colorBuffer.release();
 
     program->setUniformValue("modelMatrix", m_modelMatrix);
 
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
 
-    m_vertexBuffer.release();
     program->release();
 }
 
 void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {
     program->enableAttributeArray(attribute_location);
     program->setAttributeBuffer(attribute_location, element_type, offset, element_size, sizeof(Vertex));
+}
+
+void Cube::setColorAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {
+    program->enableAttributeArray(attribute_location);
+    program->setAttributeBuffer(attribute_location, element_type, offset, element_size, 0);
 }
