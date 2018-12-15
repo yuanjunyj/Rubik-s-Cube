@@ -2,12 +2,14 @@
 #define CUBE_H
 
 #include "vertex.h"
+#include "shader.h"
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
 #include <QOpenGLTexture>
 
 
-class Cube
+class Cube : protected QOpenGLFunctions
 {
 public:
     Cube();
@@ -23,7 +25,10 @@ private:
 public:
     void generateVertices(double length);
     void setPosition(QVector3D translation);
+    void render(Shader* shader);
 
+private:
+    void setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset);
 
 };
 

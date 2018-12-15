@@ -7,3 +7,10 @@ Camera::Camera() :
 {
 
 }
+
+QMatrix4x4 Camera::getViewMatrix() {
+    QMatrix4x4 viewMatrix;
+    viewMatrix.setToIdentity();
+    viewMatrix.lookAt(pos, pos + front, up);
+    return viewMatrix;
+}

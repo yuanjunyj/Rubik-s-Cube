@@ -3,11 +3,13 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include "camera.h"
+#include "rubik.h"
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:
-    OpenGLWidget(QOpenGLWidget* widget = nullptr);
+    OpenGLWidget(QOpenGLWidget* widget = Q_NULLPTR);
     ~OpenGLWidget();
 
 protected:
@@ -16,7 +18,13 @@ protected:
     void paintGL();
 
 private:
-    Cube* cubes;
+    void initialize();
+    void render();
+
+private:
+    Camera* m_camera;
+    QMatrix4x4 m_viewMatrix, m_projectionMatrix;
+    Rubik* m_rubik;
 
 };
 

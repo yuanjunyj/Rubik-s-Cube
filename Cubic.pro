@@ -6,11 +6,16 @@ SOURCES += \
     cube.cpp \
     vertex.cpp \
     rubik.cpp \
-    camera.cpp
+    camera.cpp \
+    shader.cpp
 
 HEADERS += \
     openglwidget.h \
     cube.h \
     vertex.h \
     rubik.h \
-    camera.h
+    camera.h \
+    shader.h
+
+RESOURCES += \
+    shaders.qrc
