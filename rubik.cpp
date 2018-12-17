@@ -22,7 +22,7 @@ void Rubik::generateCubes(double cube_length) {
         if (x == 0) {
             m_cubes[i].setFacetColor('L', QVector3D(0, 255 / 255., 0)); // Lime
         } else if (x == 2) {
-            m_cubes[i].setFacetColor('R', QVector3D(255 / 255., 255 / 255., 0)); // Yellow
+            m_cubes[i].setFacetColor('R', QVector3D(65 / 255., 105 / 255., 225 / 255.)); // Cyan
         }
         if (y == 0) {
             m_cubes[i].setFacetColor('D', QVector3D(255 / 255., 165 / 255., 0)); // Orange
@@ -30,9 +30,9 @@ void Rubik::generateCubes(double cube_length) {
             m_cubes[i].setFacetColor('U', QVector3D(255 / 255., 0, 0)); // Red
         }
         if (z == 0) {
-            m_cubes[i].setFacetColor('B', QVector3D(0, 0, 0)); // Black
+            m_cubes[i].setFacetColor('B', QVector3D(238 / 255., 130 / 255., 238 / 255.)); // Violet
         } else if (z == 2) {
-            m_cubes[i].setFacetColor('F', QVector3D(0, 255 / 255., 255 / 255.)); // Cyan
+            m_cubes[i].setFacetColor('F', QVector3D(255 / 255., 255 / 255., 0)); // Yellow
         }
         m_cubes[i].generateVertices(cube_length * 0.95);
         m_cubes[i].generateColorBuffer();
