@@ -8,6 +8,8 @@
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
+    Q_OBJECT
+
 public:
     OpenGLWidget(QOpenGLWidget* widget = Q_NULLPTR);
     ~OpenGLWidget();
@@ -35,8 +37,12 @@ private:
         RightPressed = 2
     };
     MouseStatus m_mouseStatus;
+    bool m_keyLock;
     QMatrix4x4 m_viewMatrix, m_projectionMatrix;
     Rubik* m_rubik;
+
+public slots:
+    void unlockKey();
 
 };
 

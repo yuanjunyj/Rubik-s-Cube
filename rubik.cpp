@@ -4,7 +4,8 @@
 #define CUBE_SUM 27 // 3 * 3 * 3
 
 
-Rubik::Rubik()
+Rubik::Rubik(OpenGLWidget* parent) :
+    m_parent(parent)
 {
     m_rotationMatrix.setToIdentity();
     generateCubes(CUBE_LENGTH);
@@ -62,7 +63,7 @@ void Rubik::rotate(float angle, QVector3D axis) {
 }
 
 void Rubik::screw(QString step) {
-    int x = -1, y = -1, z = -1, angle;
+    int x = -1, y = -1, z = -1, angle = 0;
     QVector3D axis, layer_center;
     // Break down single step
     QChar layer = step[0], operation = ' ';
@@ -71,31 +72,31 @@ void Rubik::screw(QString step) {
     }
     // Define steps (Dirty code)
     // Layer
-    if (step == 'L') {
+    if (layer == 'L') {
         x = 0;
         axis = QVector3D(-1, 0, 0);
-    } else if (step == 'M') {
+    } else if (layer == 'M') {
         x = 1;
         axis = QVector3D(-1, 0, 0);
-    } else if (step == 'R') {
+    } else if (layer == 'R') {
         x = 2;
         axis = QVector3D(1, 0, 0);
-    } else if (step == 'D') {
+    } else if (layer == 'D') {
         y = 0;
         axis = QVector3D(0, -1, 0);
-    } else if (step == 'E') {
+    } else if (layer == 'E') {
         y = 1;
         axis = QVector3D(0, -1, 0);
-    } else if (step == 'U') {
+    } else if (layer == 'U') {
         y = 2;
         axis = QVector3D(0, 1, 0);
-    } else if (step == 'B') {
+    } else if (layer == 'B') {
         z = 0;
         axis = QVector3D(0, 0 , -1);
-    } else if (step == 'S') {
+    } else if (layer == 'S') {
         z = 1;
         axis = QVector3D(0, 0, 1);
-    } else if (step == 'F') {
+    } else if (layer == 'F') {
         z = 2;
         axis = QVector3D(0, 0, 1);
     }
@@ -110,6 +111,10 @@ void Rubik::screw(QString step) {
     } else if (operation == '2') {
         angle = 180;
     }
+
+    // Create animation object
+    m_animation = new Animation(this);
+    m_animation->setRotationAttributes(angle, axis);
 
     // Compute new cube position
     int new_position[3][3][3];
@@ -133,11 +138,18 @@ void Rubik::screw(QString step) {
                 next += layer_center;
                 int new_x = next.x(), new_y = next.y(), new_z = next.z();
                 new_position[new_x][new_y][new_z] = m_position[i][j][k];
-                m_cubes[m_position[i][j][k]].rotate(angle, axis);
+//                m_cubes[m_position[i][j][k]].rotate(angle, axis);
+                m_animation->addCube(m_position[i][j][k]);
             }
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
             for (int k = 0; k < 3; ++k) {
                 m_position[i][j][k] = new_position[i][j][k];
             }
+    m_animation->start();
+}
+
+void Rubik::animationFinished() {
+    delete m_animation;
+    emit screwDone();
 }

@@ -4,7 +4,8 @@
 
 OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
     QOpenGLWidget(widget),
-    m_mouseStatus(Released)
+    m_mouseStatus(Released),
+    m_keyLock(false)
 {
 
 }
@@ -67,6 +68,9 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
+    if (m_keyLock) {
+        return;
+    }
     switch (event->key()) {
     case Qt::Key_U:
         m_rubik->screw("U");
@@ -95,7 +99,10 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_S:
         m_rubik->screw("S");
         break;
+    default:
+        return;
     }
+    m_keyLock = true;
     update();
 }
 
@@ -110,6 +117,11 @@ void OpenGLWidget::render() {
 
 void OpenGLWidget::initialize() {
     m_camera = new Camera;
-    m_rubik = new Rubik;
+    m_rubik = new Rubik(this);
+    connect(m_rubik, SIGNAL(screwDone()), this, SLOT(unlockKey()));
     m_viewMatrix = m_camera->getViewMatrix();
+}
+
+void OpenGLWidget::unlockKey() {
+    m_keyLock = false;
 }

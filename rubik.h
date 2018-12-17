@@ -3,12 +3,20 @@
 
 #include "cube.h"
 #include "shader.h"
+#include "animation.h"
+#include <QObject>
+
+class OpenGLWidget;
 
 
-class Rubik
+class Rubik : public QObject
 {
+    Q_OBJECT
+
+    friend class Animation;
+
 public:
-    Rubik();
+    Rubik(OpenGLWidget* parent);
 
 public:
     void render();
@@ -21,10 +29,18 @@ private:
     void generateShader(const QString& vertexShader, const QString& fragmentShader);
 
 private:
+    OpenGLWidget* m_parent;
     Cube* m_cubes;
     Shader* m_shader;
     QMatrix4x4 m_rotationMatrix;
     int m_position[3][3][3];
+    Animation *m_animation;
+
+signals:
+    void screwDone();
+
+public slots:
+    void animationFinished();
 };
 
 #endif // RUBIK_H
