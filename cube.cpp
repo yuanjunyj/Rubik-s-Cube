@@ -133,6 +133,13 @@ void Cube::translate(QVector3D translation) {
     m_modelMatrix.translate(translation);
 }
 
+void Cube::rotate(int angle, QVector3D axis) {
+    QMatrix4x4 r;
+    r.setToIdentity();
+    r.rotate(angle, axis);
+    m_modelMatrix = r * m_modelMatrix;
+}
+
 void Cube::setFacetColor(QChar facet, QVector3D color) {
     const QString facets_order = "FBUDLR";
     m_color[facets_order.indexOf(facet)] = color;

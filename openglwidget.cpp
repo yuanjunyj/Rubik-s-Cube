@@ -1,5 +1,6 @@
 #include "openglwidget.h"
 #include <QMouseEvent>
+#include <QKeyEvent>
 
 OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
     QOpenGLWidget(widget),
@@ -16,10 +17,12 @@ void OpenGLWidget::initializeGL() {
     initializeOpenGLFunctions();
     glClearColor(1, 1, 1, 1);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
     glEnable(GL_LINE_SMOOTH);
-    glEnable (GL_BLEND);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
     initialize();
 }
 
@@ -61,6 +64,39 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event) {
 
 void OpenGLWidget::mouseReleaseEvent(QMouseEvent* event) {
     m_mouseStatus = Released;
+}
+
+void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
+    switch (event->key()) {
+    case Qt::Key_U:
+        m_rubik->screw("U");
+        break;
+    case Qt::Key_D:
+        m_rubik->screw("D");
+        break;
+    case Qt::Key_L:
+        m_rubik->screw("L");
+        break;
+    case Qt::Key_R:
+        m_rubik->screw("R");
+        break;
+    case Qt::Key_F:
+        m_rubik->screw("F");
+        break;
+    case Qt::Key_B:
+        m_rubik->screw("B");
+        break;
+    case Qt::Key_M:
+        m_rubik->screw("M");
+        break;
+    case Qt::Key_E:
+        m_rubik->screw("E");
+        break;
+    case Qt::Key_S:
+        m_rubik->screw("S");
+        break;
+    }
+    update();
 }
 
 void OpenGLWidget::render() {

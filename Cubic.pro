@@ -7,7 +7,8 @@ SOURCES += \
     vertex.cpp \
     rubik.cpp \
     camera.cpp \
-    shader.cpp
+    shader.cpp \
+    animation.cpp
 
 HEADERS += \
     openglwidget.h \
@@ -15,7 +16,8 @@ HEADERS += \
     vertex.h \
     rubik.h \
     camera.h \
-    shader.h
+    shader.h \
+    animation.h
 
 RESOURCES += \
     shaders.qrc

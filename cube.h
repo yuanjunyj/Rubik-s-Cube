@@ -27,10 +27,10 @@ private:
 public:
     void generateVertices(double length);
     void translate(QVector3D translation);
+    void rotate(int angle, QVector3D axis); // angle should be multiples of 90
     void setFacetColor(QChar facet, QVector3D color);
     void generateColorBuffer();
     void render(Shader* shader);
-
 
 private:
     void initialize();
