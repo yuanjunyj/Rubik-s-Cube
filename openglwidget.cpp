@@ -1,7 +1,9 @@
 #include "openglwidget.h"
+#include <QMouseEvent>
 
 OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
-    QOpenGLWidget(widget)
+    QOpenGLWidget(widget),
+    m_mouseStatus(Released)
 {
 
 }
@@ -34,15 +36,31 @@ void OpenGLWidget::paintGL() {
 }
 
 void OpenGLWidget::mousePressEvent(QMouseEvent* event) {
-
+    if (event->button() == Qt::RightButton) {
+        m_mouseStatus = RightPressed;
+    } else if (event->button() == Qt::LeftButton) {
+        m_mouseStatus = LeftPressed;
+    }
+    m_mousePos = event->pos();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent* event) {
+    if (m_mouseStatus == Released) {
+        return;
+    }
+    if (m_mouseStatus == RightPressed) {
+        QPoint delta = event->pos() - m_mousePos;
+        m_rubik->rotate(delta.x(), m_camera->getViewY());
+        m_rubik->rotate(delta.y(), m_camera->getViewX());
+        m_mousePos = event->pos();
+        update();
+    } else if (m_mouseStatus == LeftPressed) {
 
+    }
 }
 
 void OpenGLWidget::mouseReleaseEvent(QMouseEvent* event) {
-
+    m_mouseStatus = Released;
 }
 
 void OpenGLWidget::render() {

@@ -27,6 +27,13 @@ private:
 
 private:
     Camera* m_camera;
+    QPoint m_mousePos;
+    enum MouseStatus {
+        Released = 0,
+        LeftPressed = 1,
+        RightPressed = 2
+    };
+    MouseStatus m_mouseStatus;
     QMatrix4x4 m_viewMatrix, m_projectionMatrix;
     Rubik* m_rubik;
 

@@ -1,6 +1,5 @@
 #include "cube.h"
 #include <QOpenGLShaderProgram>
-#include <QDebug>
 
 Cube::Cube() :
     m_vertexBuffer(QOpenGLBuffer::VertexBuffer),

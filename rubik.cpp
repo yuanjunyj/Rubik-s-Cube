@@ -6,6 +6,7 @@
 
 Rubik::Rubik()
 {
+    m_rotationMatrix.setToIdentity();
     generateCubes(CUBE_LENGTH);
     generateShader("://shader/basic.vert", "://shader/basic.frag");
 }
@@ -43,7 +44,18 @@ void Rubik::generateShader(const QString& vertexShader, const QString& fragmentS
 }
 
 void Rubik::render() {
+    QOpenGLShaderProgram* program = m_shader->getProgram();
+    program->bind();
+    program->setUniformValue("rotationMatrix", m_rotationMatrix);
+    program->release();
     for (int i = 0; i < CUBE_SUM; ++i) {
         m_cubes[i].render(m_shader);
     }
+}
+
+void Rubik::rotate(float angle, QVector3D axis) {
+    QMatrix4x4 r;
+    r.setToIdentity();
+    r.rotate(angle, axis);
+    m_rotationMatrix = r * m_rotationMatrix;
 }
