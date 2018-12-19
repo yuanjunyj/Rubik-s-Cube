@@ -2,6 +2,7 @@
 #include <QOpenGLShaderProgram>
 
 Cube::Cube() :
+    m_length(1.0),
     m_vertexBuffer(QOpenGLBuffer::VertexBuffer),
     m_colorBuffer(QOpenGLBuffer::VertexBuffer),
     m_texture(QOpenGLTexture::Target2D)
@@ -26,18 +27,16 @@ void Cube::initialize() {
     m_modelMatrix.setToIdentity();
 }
 
-void Cube::generateVertices(double length) {
-    m_length = length;
-    double half_length = length / 2.0;
+void Cube::generateVertices() {
     const QVector3D positions[8] = {
-        QVector3D( half_length, -half_length, half_length ),
-        QVector3D( half_length, -half_length, -half_length ),
-        QVector3D( -half_length, -half_length, -half_length ),
-        QVector3D( -half_length, -half_length, half_length ),
-        QVector3D( half_length, half_length, half_length ),
-        QVector3D( half_length, half_length, -half_length ),
-        QVector3D( -half_length, half_length, -half_length ),
-        QVector3D( -half_length, half_length, half_length )
+        QVector3D( 0.5, -0.5, 0.5 ),
+        QVector3D( 0.5, -0.5, -0.5 ),
+        QVector3D( -0.5, -0.5, -0.5 ),
+        QVector3D( -0.5, -0.5, 0.5 ),
+        QVector3D( 0.5, 0.5, 0.5 ),
+        QVector3D( 0.5, 0.5, -0.5 ),
+        QVector3D( -0.5, 0.5, -0.5 ),
+        QVector3D( -0.5, 0.5, 0.5 )
     };
     const QVector3D normals[6] = {
         QVector3D( 1.0, 0.0, 0.0 ),
@@ -127,6 +126,11 @@ void Cube::generateColorBuffer() {
     m_colorBuffer.allocate(colors, 6 * 2 * 3 * sizeof(QVector3D));
     m_colorBuffer.release();
 
+}
+
+void Cube::scale(double ratio) {
+    m_modelMatrix.scale(ratio);
+    m_length *= ratio;
 }
 
 void Cube::translate(QVector3D translation) {

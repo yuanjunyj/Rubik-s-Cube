@@ -26,7 +26,7 @@ public:
     void screw(QString step);
 
 private:
-    void generateCubes(double cube_length);
+    void generateCubes();
 
 private:
     OpenGLWidget* m_parent;

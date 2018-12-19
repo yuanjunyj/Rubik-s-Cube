@@ -7,7 +7,7 @@
 Rubik::Rubik()
 {
     m_rotationMatrix.setToIdentity();
-    generateCubes(CUBE_LENGTH);
+    generateCubes();
     m_shader = new Shader;
     m_shader->setupShader("://shader/basic.vert", "://shader/basic.frag");
 }
@@ -16,7 +16,7 @@ void Rubik::setParent(OpenGLWidget* parent) {
     m_parent = parent;
 }
 
-void Rubik::generateCubes(double cube_length) {
+void Rubik::generateCubes() {
     m_cubes = new Cube[3 * 3 * 3];
     for (int i = 0; i < CUBE_SUM; ++i) {
         int x = i / 9,
@@ -38,9 +38,10 @@ void Rubik::generateCubes(double cube_length) {
         } else if (z == 2) {
             m_cubes[i].setFacetColor('F', QVector3D(255 / 255., 255 / 255., 0)); // Yellow
         }
-        m_cubes[i].generateVertices(cube_length * 0.95);
+        m_cubes[i].generateVertices();
         m_cubes[i].generateColorBuffer();
-        m_cubes[i].translate(QVector3D((x - 1) * cube_length, (y - 1) * cube_length, (z - 1) * cube_length));
+        m_cubes[i].translate(QVector3D((x - 1) * CUBE_LENGTH, (y - 1) * CUBE_LENGTH, (z - 1) * CUBE_LENGTH));
+        m_cubes[i].scale(0.95);
     }
 }
 
