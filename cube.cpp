@@ -1,10 +1,12 @@
 #include "cube.h"
 #include <QOpenGLShaderProgram>
 
+const QVector3D Cube::s_base_color = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
+
 Cube::Cube() :
     m_length(1.0),
-    m_vertexBuffer(QOpenGLBuffer::VertexBuffer),
-    m_colorBuffer(QOpenGLBuffer::VertexBuffer),
+    m_blockBuffer(QOpenGLBuffer::VertexBuffer),
+    m_pasterBuffer(QOpenGLBuffer::VertexBuffer),
     m_texture(QOpenGLTexture::Target2D)
 {
     initializeOpenGLFunctions();
@@ -12,22 +14,23 @@ Cube::Cube() :
 }
 
 Cube::~Cube() {
-    m_vertexBuffer.destroy();
-    m_colorBuffer.destroy();
-    delete [] m_vertices;
+    m_blockBuffer.destroy();
+    m_pasterBuffer.destroy();
+    delete [] m_facets;
+    delete [] m_pasters;
 }
 
 void Cube::initialize() {
     // Color
     for (int i =0; i < 6; ++i) {
-        m_color[i] = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
+        m_color[i] = s_base_color;
     }
 
     // Model Matrix
     m_modelMatrix.setToIdentity();
 }
 
-void Cube::generateVertices() {
+void Cube::createBlock() {
     const QVector3D positions[8] = {
         QVector3D( 0.5, -0.5, 0.5 ),
         QVector3D( 0.5, -0.5, -0.5 ),
@@ -53,79 +56,86 @@ void Cube::generateVertices() {
         QVector2D( 1.0, 1.0 )
     };
 
-    m_vertices = new Vertex[6 * 2 * 3];
+    m_facets = new Vertex[6 * 2 * 3];
 
     // Front
-    m_vertices[0].set(positions[3], normals[2], texCoords[0]);
-    m_vertices[1].set(positions[0], normals[2], texCoords[2]);
-    m_vertices[2].set(positions[7], normals[2], texCoords[1]);
-    m_vertices[3].set(positions[4], normals[2], texCoords[3]);
-    m_vertices[4].set(positions[7], normals[2], texCoords[1]);
-    m_vertices[5].set(positions[0], normals[2], texCoords[2]);
+    m_facets[0].setNode(positions[3], normals[2], texCoords[0]);
+    m_facets[1].setNode(positions[0], normals[2], texCoords[2]);
+    m_facets[2].setNode(positions[7], normals[2], texCoords[1]);
+    m_facets[3].setNode(positions[4], normals[2], texCoords[3]);
+    m_facets[4].setNode(positions[7], normals[2], texCoords[1]);
+    m_facets[5].setNode(positions[0], normals[2], texCoords[2]);
 
     // Back
-    m_vertices[6].set(positions[6], normals[5], texCoords[0]);
-    m_vertices[7].set(positions[5], normals[5], texCoords[2]);
-    m_vertices[8].set(positions[2], normals[5], texCoords[1]);
-    m_vertices[9].set(positions[1], normals[5], texCoords[3]);
-    m_vertices[10].set(positions[2], normals[5], texCoords[1]);
-    m_vertices[11].set(positions[5], normals[5], texCoords[2]);
+    m_facets[6].setNode(positions[6], normals[5], texCoords[0]);
+    m_facets[7].setNode(positions[5], normals[5], texCoords[2]);
+    m_facets[8].setNode(positions[2], normals[5], texCoords[1]);
+    m_facets[9].setNode(positions[1], normals[5], texCoords[3]);
+    m_facets[10].setNode(positions[2], normals[5], texCoords[1]);
+    m_facets[11].setNode(positions[5], normals[5], texCoords[2]);
 
     // Up
-    m_vertices[12].set(positions[7], normals[1], texCoords[0]);
-    m_vertices[13].set(positions[4], normals[1], texCoords[2]);
-    m_vertices[14].set(positions[6], normals[1], texCoords[1]);
-    m_vertices[15].set(positions[5], normals[1], texCoords[3]);
-    m_vertices[16].set(positions[6], normals[1], texCoords[1]);
-    m_vertices[17].set(positions[4], normals[1], texCoords[2]);
+    m_facets[12].setNode(positions[7], normals[1], texCoords[0]);
+    m_facets[13].setNode(positions[4], normals[1], texCoords[2]);
+    m_facets[14].setNode(positions[6], normals[1], texCoords[1]);
+    m_facets[15].setNode(positions[5], normals[1], texCoords[3]);
+    m_facets[16].setNode(positions[6], normals[1], texCoords[1]);
+    m_facets[17].setNode(positions[4], normals[1], texCoords[2]);
 
     // Down
-    m_vertices[18].set(positions[2], normals[4], texCoords[0]);
-    m_vertices[19].set(positions[1], normals[4], texCoords[2]);
-    m_vertices[20].set(positions[3], normals[4], texCoords[1]);
-    m_vertices[21].set(positions[0], normals[4], texCoords[3]);
-    m_vertices[22].set(positions[3], normals[4], texCoords[1]);
-    m_vertices[23].set(positions[1], normals[4], texCoords[2]);
+    m_facets[18].setNode(positions[2], normals[4], texCoords[0]);
+    m_facets[19].setNode(positions[1], normals[4], texCoords[2]);
+    m_facets[20].setNode(positions[3], normals[4], texCoords[1]);
+    m_facets[21].setNode(positions[0], normals[4], texCoords[3]);
+    m_facets[22].setNode(positions[3], normals[4], texCoords[1]);
+    m_facets[23].setNode(positions[1], normals[4], texCoords[2]);
 
     // Left
-    m_vertices[24].set(positions[2], normals[3], texCoords[0]);
-    m_vertices[25].set(positions[3], normals[3], texCoords[2]);
-    m_vertices[26].set(positions[6], normals[3], texCoords[1]);
-    m_vertices[27].set(positions[7], normals[3], texCoords[3]);
-    m_vertices[28].set(positions[6], normals[3], texCoords[1]);
-    m_vertices[29].set(positions[3], normals[3], texCoords[2]);
+    m_facets[24].setNode(positions[2], normals[3], texCoords[0]);
+    m_facets[25].setNode(positions[3], normals[3], texCoords[2]);
+    m_facets[26].setNode(positions[6], normals[3], texCoords[1]);
+    m_facets[27].setNode(positions[7], normals[3], texCoords[3]);
+    m_facets[28].setNode(positions[6], normals[3], texCoords[1]);
+    m_facets[29].setNode(positions[3], normals[3], texCoords[2]);
 
     // Right
-    m_vertices[30].set(positions[0], normals[0], texCoords[0]);
-    m_vertices[31].set(positions[1], normals[0], texCoords[2]);
-    m_vertices[32].set(positions[4], normals[0], texCoords[1]);
-    m_vertices[33].set(positions[5], normals[0], texCoords[3]);
-    m_vertices[34].set(positions[4], normals[0], texCoords[1]);
-    m_vertices[35].set(positions[1], normals[0], texCoords[2]);
+    m_facets[30].setNode(positions[0], normals[0], texCoords[0]);
+    m_facets[31].setNode(positions[1], normals[0], texCoords[2]);
+    m_facets[32].setNode(positions[4], normals[0], texCoords[1]);
+    m_facets[33].setNode(positions[5], normals[0], texCoords[3]);
+    m_facets[34].setNode(positions[4], normals[0], texCoords[1]);
+    m_facets[35].setNode(positions[1], normals[0], texCoords[2]);
 
-    // Vertex Buffer
-    m_vertexBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-    m_vertexBuffer.create();
-    m_vertexBuffer.bind();
-    m_vertexBuffer.allocate(m_vertices, 6 * 2 * 3 * sizeof(Vertex));
-    m_vertexBuffer.release();
+    // Facets Buffer
+    m_blockBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    m_blockBuffer.create();
+    m_blockBuffer.bind();
+    m_blockBuffer.allocate(m_facets, 6 * 2 * 3 * sizeof(Vertex));
+    m_blockBuffer.release();
 }
 
-void Cube::generateColorBuffer() {
-    QVector3D *colors = new QVector3D[6 * 2 * 3];
+void Cube::createPasters() {
+    m_pasters_count = 0;
+    std::vector<int> outer_facet;
     for (int i = 0; i < 6; ++i) {
-        for (int j = 0; j < 6; ++j) {
-            colors[6 * i + j] = m_color[i];
+        if (m_color[i] != s_base_color) {
+            m_pasters_count++;
+            outer_facet.push_back(i);
         }
     }
-
-    // Color Buffer
-    m_colorBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-    m_colorBuffer.create();
-    m_colorBuffer.bind();
-    m_colorBuffer.allocate(colors, 6 * 2 * 3 * sizeof(QVector3D));
-    m_colorBuffer.release();
-
+    m_pasters = new Vertex[m_pasters_count * 2 * 3];
+    for (unsigned int i = 0; i < outer_facet.size(); ++i) {
+        int facet_index = outer_facet[i];
+        for (int j = 0; j < 6; ++j) {
+                m_pasters[6 * i + j] = m_facets[6 * facet_index + j];
+                m_pasters[6 * i + j].setColor(m_color[facet_index]);
+        }
+    }
+    m_pasterBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    m_pasterBuffer.create();
+    m_pasterBuffer.bind();
+    m_pasterBuffer.allocate(m_pasters, m_pasters_count * 2 * 3 * sizeof(Vertex));
+    m_pasterBuffer.release();
 }
 
 void Cube::scale(double ratio) {
@@ -159,25 +169,39 @@ void Cube::render(Shader* shader) {
 
     program->bind();
 
-    // Data buffer
-    m_vertexBuffer.bind();
+    program->setUniformValue("modelMatrix", m_modelMatrix);
+    program->setUniformValue("baseColor", s_base_color);
+
+    // Block buffer
+    m_blockBuffer.bind();
     int offset = 0;
     setVertexAttribute(program, s_positionLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
     setVertexAttribute(program, s_normalLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
     setVertexAttribute(program, s_texCoordLoc, GL_FLOAT, 2, offset);
-    m_vertexBuffer.release();
-
-    m_colorBuffer.bind();
-    setColorAttribute(program, s_colorLoc, GL_FLOAT, 3, 0);
-    m_colorBuffer.release();
-
-    program->setUniformValue("modelMatrix", m_modelMatrix);
-
+    m_blockBuffer.release();
+    program->setUniformValue("useColor", false);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
 
+    // Paster buffer
+    m_pasterBuffer.bind();
+    offset = 0;
+    setVertexAttribute(program, s_positionLoc, GL_FLOAT, 3, offset);
+    offset += 3 * sizeof(GLfloat);
+    setVertexAttribute(program, s_normalLoc, GL_FLOAT, 3, offset);
+    offset += 3 * sizeof(GLfloat);
+    setVertexAttribute(program, s_texCoordLoc, GL_FLOAT, 2, offset);
+    offset += 2 * sizeof(GLfloat);
+    setVertexAttribute(program, s_colorLoc, GL_FLOAT, 3, offset);
+    m_pasterBuffer.release();
+    program->setUniformValue("useColor", true);
+    glDepthFunc(GL_LEQUAL);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
+    glDepthFunc(GL_LESS);
     program->release();
+
+
 }
 
 void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {
@@ -185,7 +209,3 @@ void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_locat
     program->setAttributeBuffer(attribute_location, element_type, offset, element_size, sizeof(Vertex));
 }
 
-void Cube::setColorAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {
-    program->enableAttributeArray(attribute_location);
-    program->setAttributeBuffer(attribute_location, element_type, offset, element_size, 0);
-}

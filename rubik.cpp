@@ -1,6 +1,7 @@
 #include "rubik.h"
 
 #define CUBE_LENGTH 1.0
+#define SCALE 0.9
 #define CUBE_SUM 27 // 3 * 3 * 3
 
 
@@ -38,10 +39,10 @@ void Rubik::generateCubes() {
         } else if (z == 2) {
             m_cubes[i].setFacetColor('F', QVector3D(255 / 255., 255 / 255., 0)); // Yellow
         }
-        m_cubes[i].generateVertices();
-        m_cubes[i].generateColorBuffer();
+        m_cubes[i].createBlock();
+        m_cubes[i].createPasters();
         m_cubes[i].translate(QVector3D((x - 1) * CUBE_LENGTH, (y - 1) * CUBE_LENGTH, (z - 1) * CUBE_LENGTH));
-        m_cubes[i].scale(0.95);
+        m_cubes[i].scale(SCALE);
     }
 }
 

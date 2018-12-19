@@ -9,12 +9,14 @@ class Vertex
 {
 public:
     Vertex();
-    void set(const QVector3D& _position, const QVector3D& _normal, const QVector2D& _texCoord);
+    void setNode(const QVector3D& _position, const QVector3D& _normal, const QVector2D& _texCoord);
+    void setColor(const QVector3D& _color);
 
 public:
     QVector3D position;
     QVector2D texCoord;
     QVector3D normal;
+    QVector3D color;
 };
 
 #endif // VERTEX_H
