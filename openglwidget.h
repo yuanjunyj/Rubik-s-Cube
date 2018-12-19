@@ -5,6 +5,7 @@
 #include <QOpenGLFunctions>
 #include "camera.h"
 #include "rubik.h"
+#include "skybox.h"
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -40,6 +41,7 @@ private:
     bool m_keyLock;
     QMatrix4x4 m_viewMatrix, m_projectionMatrix;
     Rubik* m_rubik;
+    SkyBox* m_skybox;
 
 public slots:
     void unlockKey();

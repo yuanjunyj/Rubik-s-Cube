@@ -16,9 +16,10 @@ class Rubik : public QObject
     friend class Animation;
 
 public:
-    Rubik(OpenGLWidget* parent);
+    Rubik();
 
 public:
+    void setParent(OpenGLWidget* parent);
     void render();
     Shader* getShader() const { return m_shader; }
     void rotate(float angle, QVector3D axis);
@@ -26,7 +27,6 @@ public:
 
 private:
     void generateCubes(double cube_length);
-    void generateShader(const QString& vertexShader, const QString& fragmentShader);
 
 private:
     OpenGLWidget* m_parent;

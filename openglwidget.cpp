@@ -1,6 +1,7 @@
 #include "openglwidget.h"
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QMatrix3x3>
 
 OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
     QOpenGLWidget(widget),
@@ -107,18 +108,31 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
 }
 
 void OpenGLWidget::render() {
-    QOpenGLShaderProgram* program = m_rubik->getShader()->getProgram();
-    program->bind();
-    program->setUniformValue("projectionMatrix", m_projectionMatrix);
-    program->setUniformValue("viewMatrix", m_viewMatrix);
-    program->release();
+    // Rubik
+    QOpenGLShaderProgram* rubik_program = m_rubik->getShader()->getProgram();
+    rubik_program->bind();
+    rubik_program->setUniformValue("projectionMatrix", m_projectionMatrix);
+    rubik_program->setUniformValue("viewMatrix", m_viewMatrix);
+    rubik_program->release();
     m_rubik->render();
+
+    // SkyBox
+    QOpenGLShaderProgram* skybox_program = m_skybox->getShader()->getProgram();
+    skybox_program->bind();
+    skybox_program->setUniformValue("projectionMatrix", m_projectionMatrix);
+    QMatrix4x4 view = m_viewMatrix;
+    view.setColumn(3, QVector4D(0, 0, 0, 1));
+    skybox_program->setUniformValue("viewMatrix", view);
+    skybox_program->release();
+    m_skybox->render();
 }
 
 void OpenGLWidget::initialize() {
     m_camera = new Camera;
-    m_rubik = new Rubik(this);
+    m_rubik = new Rubik;
+    m_rubik->setParent(this);
     connect(m_rubik, SIGNAL(screwDone()), this, SLOT(unlockKey()));
+    m_skybox = new SkyBox;
     m_viewMatrix = m_camera->getViewMatrix();
 }
 

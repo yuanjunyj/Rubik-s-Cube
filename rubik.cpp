@@ -4,12 +4,16 @@
 #define CUBE_SUM 27 // 3 * 3 * 3
 
 
-Rubik::Rubik(OpenGLWidget* parent) :
-    m_parent(parent)
+Rubik::Rubik()
 {
     m_rotationMatrix.setToIdentity();
     generateCubes(CUBE_LENGTH);
-    generateShader("://shader/basic.vert", "://shader/basic.frag");
+    m_shader = new Shader;
+    m_shader->setupShader("://shader/basic.vert", "://shader/basic.frag");
+}
+
+void Rubik::setParent(OpenGLWidget* parent) {
+    m_parent = parent;
 }
 
 void Rubik::generateCubes(double cube_length) {
@@ -38,11 +42,6 @@ void Rubik::generateCubes(double cube_length) {
         m_cubes[i].generateColorBuffer();
         m_cubes[i].translate(QVector3D((x - 1) * cube_length, (y - 1) * cube_length, (z - 1) * cube_length));
     }
-}
-
-void Rubik::generateShader(const QString& vertexShader, const QString& fragmentShader) {
-    m_shader = new Shader;
-    m_shader->setupShader(vertexShader, fragmentShader);
 }
 
 void Rubik::render() {
@@ -138,7 +137,6 @@ void Rubik::screw(QString step) {
                 next += layer_center;
                 int new_x = next.x(), new_y = next.y(), new_z = next.z();
                 new_position[new_x][new_y][new_z] = m_position[i][j][k];
-//                m_cubes[m_position[i][j][k]].rotate(angle, axis);
                 m_animation->addCube(m_position[i][j][k]);
             }
     for (int i = 0; i < 3; ++i)

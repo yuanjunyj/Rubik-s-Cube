@@ -8,7 +8,8 @@ SOURCES += \
     rubik.cpp \
     camera.cpp \
     shader.cpp \
-    animation.cpp
+    animation.cpp \
+    skybox.cpp
 
 HEADERS += \
     openglwidget.h \
@@ -17,7 +18,9 @@ HEADERS += \
     rubik.h \
     camera.h \
     shader.h \
-    animation.h
+    animation.h \
+    skybox.h
 
 RESOURCES += \
-    shaders.qrc
+    shaders.qrc \
+    images.qrc
