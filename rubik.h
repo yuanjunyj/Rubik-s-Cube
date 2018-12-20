@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "animation.h"
 #include <QObject>
+#include <QOpenGLTexture>
 
 class OpenGLWidget;
 
@@ -17,6 +18,7 @@ class Rubik : public QObject
 
 public:
     Rubik();
+    ~Rubik();
 
 public:
     void setParent(OpenGLWidget* parent);
@@ -26,11 +28,13 @@ public:
     void screw(QString step);
 
 private:
-    void generateCubes();
+    void createCubes();
+    void createImageTexture(const QString *filepath);
 
 private:
     OpenGLWidget* m_parent;
     Cube* m_cubes;
+    QOpenGLTexture** m_texture;
     Shader* m_shader;
     QMatrix4x4 m_rotationMatrix;
     int m_position[3][3][3];

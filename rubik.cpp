@@ -1,4 +1,5 @@
 #include "rubik.h"
+#include <QImage>
 
 #define CUBE_LENGTH 1.0
 #define SCALE 0.95
@@ -8,41 +9,63 @@
 Rubik::Rubik()
 {
     m_rotationMatrix.setToIdentity();
-    generateCubes();
+    createCubes();
     m_shader = new Shader;
     m_shader->setupShader("://shader/basic.vert", "://shader/basic.frag");
+    QString texture_filenames[6] = {"://texture/bamboo.jpg", "://texture/spiral.jpg", "://texture/wall.jpg", "://texture/flower.jpg" ,"://texture/shining.jpg", "://texture/stone.jpg"};
+    createImageTexture(texture_filenames);
+}
+
+Rubik::~Rubik() {
+    for (int i = 0; i < 6; ++i) {
+        m_texture[i]->destroy();
+        delete m_texture[i];
+    }
+    delete [] m_texture;
 }
 
 void Rubik::setParent(OpenGLWidget* parent) {
     m_parent = parent;
 }
 
-void Rubik::generateCubes() {
+void Rubik::createCubes() {
     m_cubes = new Cube[3 * 3 * 3];
     for (int i = 0; i < CUBE_SUM; ++i) {
         int x = i / 9,
             y = i % 9 / 3,
             z = i % 3;
         m_position[x][y][z] = i;
+        m_cubes[i].createBlock();
         if (x == 0) {
-            m_cubes[i].setFacetColor('L', QVector3D(0, 255 / 255., 0)); // Lime
+            m_cubes[i].setFacet('L', QVector3D(0, 255 / 255., 0), y, z); // Lime
         } else if (x == 2) {
-            m_cubes[i].setFacetColor('R', QVector3D(65 / 255., 105 / 255., 225 / 255.)); // Cyan
+            m_cubes[i].setFacet('R', QVector3D(65 / 255., 105 / 255., 225 / 255.), z, y); // Cyan
         }
         if (y == 0) {
-            m_cubes[i].setFacetColor('D', QVector3D(255 / 255., 165 / 255., 0)); // Orange
+            m_cubes[i].setFacet('D', QVector3D(255 / 255., 165 / 255., 0), z, x); // Orange
         } else if (y == 2) {
-            m_cubes[i].setFacetColor('U', QVector3D(255 / 255., 0, 0)); // Red
+            m_cubes[i].setFacet('U', QVector3D(255 / 255., 0, 0), x, z); // Red
         }
         if (z == 0) {
-            m_cubes[i].setFacetColor('B', QVector3D(238 / 255., 130 / 255., 238 / 255.)); // Violet
+            m_cubes[i].setFacet('B', QVector3D(238 / 255., 130 / 255., 238 / 255.), x, y); // Violet
         } else if (z == 2) {
-            m_cubes[i].setFacetColor('F', QVector3D(255 / 255., 255 / 255., 0)); // Yellow
+            m_cubes[i].setFacet('F', QVector3D(255 / 255., 255 / 255., 0), y, x); // Yellow
         }
-        m_cubes[i].createBlock();
         m_cubes[i].createPasters();
         m_cubes[i].translate(QVector3D((x - 1) * CUBE_LENGTH, (y - 1) * CUBE_LENGTH, (z - 1) * CUBE_LENGTH));
         m_cubes[i].scale(SCALE);
+    }
+}
+
+void Rubik::createImageTexture(const QString *filepath) {
+    m_texture = new QOpenGLTexture*[6];
+    for (int i = 0; i < 6; ++i) {
+        m_texture[i] = new QOpenGLTexture(QOpenGLTexture::Target2D);
+        QImage image(filepath[i]);
+        Q_ASSERT(!filepath[i].isNull());
+        m_texture[i]->setData(image);
+        m_texture[i]->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
+        m_texture[i]->setMagnificationFilter(QOpenGLTexture::Linear);
     }
 }
 
@@ -50,9 +73,19 @@ void Rubik::render() {
     QOpenGLShaderProgram* program = m_shader->getProgram();
     program->bind();
     program->setUniformValue("rotationMatrix", m_rotationMatrix);
+    program->setUniformValue("useImage", false);
+    program->setUniformValue("useColor", false);
+    for (int i = 0; i < 6; ++i) {
+        const std::string loc = "images[" + std::to_string(i) + "]";
+        program->setUniformValue(loc.c_str(), i + 1);
+        m_texture[i]->bind(i + 1);
+    }
     program->release();
     for (int i = 0; i < CUBE_SUM; ++i) {
         m_cubes[i].render(m_shader);
+    }
+    for (int i = 0; i < 6; ++i) {
+        m_texture[i]->release();
     }
 }
 

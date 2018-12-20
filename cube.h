@@ -6,7 +6,6 @@
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
-#include <QOpenGLTexture>
 
 
 class Cube : protected QOpenGLFunctions
@@ -23,7 +22,6 @@ private:
     int m_pasters_count;
     QMatrix4x4 m_modelMatrix;
     QOpenGLBuffer m_blockBuffer, m_pasterBuffer;
-    QOpenGLTexture m_texture;
     QVector3D m_color[6];
 
 public:
@@ -31,7 +29,7 @@ public:
     void scale(double ratio);
     void translate(QVector3D translation);
     void rotate(int angle, QVector3D axis); // angle should be multiples of 90
-    void setFacetColor(QChar facet, QVector3D color);
+    void setFacet(QChar facet, QVector3D color, int x, int y);
     void createPasters();
     void render(Shader* shader);
 

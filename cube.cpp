@@ -8,8 +8,7 @@ const QString Cube::s_facets_order = "FBUDRL";
 Cube::Cube() :
     m_length(1.0),
     m_blockBuffer(QOpenGLBuffer::VertexBuffer),
-    m_pasterBuffer(QOpenGLBuffer::VertexBuffer),
-    m_texture(QOpenGLTexture::Target2D)
+    m_pasterBuffer(QOpenGLBuffer::VertexBuffer)
 {
     initializeOpenGLFunctions();
     initialize();
@@ -178,8 +177,13 @@ void Cube::rotate(int angle, QVector3D axis) {
     m_modelMatrix = r * m_modelMatrix;
 }
 
-void Cube::setFacetColor(QChar facet, QVector3D color) {
-    m_color[s_facets_order.indexOf(facet)] = color;
+void Cube::setFacet(QChar facet, QVector3D color, int x, int y) {
+    int index = s_facets_order.indexOf(facet);
+    m_color[index] = color;
+    for (int i = 0; i < 6; ++i) {
+        m_facets[6 * index + i].texCoord.setX((x + m_facets[6 * index + i].texCoord.x()) / 3);
+        m_facets[6 * index + i].texCoord.setY((y + m_facets[6 * index + i].texCoord.y()) / 3);
+    }
 }
 
 void Cube::render(Shader* shader) {
@@ -205,6 +209,7 @@ void Cube::render(Shader* shader) {
     setVertexAttribute(program, texCoordLoc, GL_FLOAT, 2, offset);
     m_blockBuffer.release();
     program->setUniformValue("useColor", false);
+    program->setUniformValue("useImage", false);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
 
     // Paster buffer
@@ -218,7 +223,10 @@ void Cube::render(Shader* shader) {
     offset += 2 * sizeof(GLfloat);
     setVertexAttribute(program, colorLoc, GL_FLOAT, 3, offset);
     m_pasterBuffer.release();
-    program->setUniformValue("useColor", true);
+//    program->setUniformValue("useColor", true);
+//    program->setUniformValue("useImage", false);
+    program->setUniformValue("useColor", false);
+    program->setUniformValue("useImage", true);
     glDepthFunc(GL_LEQUAL);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
     glDepthFunc(GL_LESS);

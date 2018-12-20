@@ -15,11 +15,11 @@ public:
 
 public:
     void render();
-    QOpenGLTexture* getSkyBoxTexture() { return &m_cubemap_texture; }
+    QOpenGLTexture* getSkyBoxTexture() const { return m_cubemap_texture; }
     Shader* getShader() const { return m_shader; }
 
 private:
-    QOpenGLTexture m_cubemap_texture;
+    QOpenGLTexture* m_cubemap_texture;
     Shader* m_shader;
     QOpenGLBuffer m_vertexBuffer;
 

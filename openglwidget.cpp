@@ -115,8 +115,8 @@ void OpenGLWidget::render() {
     rubik_program->setUniformValue("viewMatrix", m_viewMatrix);
     rubik_program->setUniformValue("cameraPos", m_camera->getPosition());
     rubik_program->setUniformValue("material_type", 3);
-    rubik_program->setUniformValue("skybox", 1);
-    m_skybox->getSkyBoxTexture()->bind(1);
+    rubik_program->setUniformValue("skybox", 0);
+    m_skybox->getSkyBoxTexture()->bind(0);
     rubik_program->release();
     m_rubik->render();
     m_skybox->getSkyBoxTexture()->release();

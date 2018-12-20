@@ -6,5 +6,11 @@
         <file>skybox/left.jpg</file>
         <file>skybox/right.jpg</file>
         <file>skybox/top.jpg</file>
+        <file>texture/bamboo.jpg</file>
+        <file>texture/flower.jpg</file>
+        <file>texture/shining.jpg</file>
+        <file>texture/spiral.jpg</file>
+        <file>texture/stone.jpg</file>
+        <file>texture/wall.jpg</file>
     </qresource>
 </RCC>
