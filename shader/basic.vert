@@ -1,3 +1,5 @@
+#version 330 core
+
 attribute vec3 position;
 attribute vec3 normal;
 attribute vec2 texCoord;
@@ -9,8 +11,15 @@ uniform mat4 projectionMatrix;
 uniform mat4 rotationMatrix;
 
 out vec3 vColor;
+out vec3 vNormal;
+out vec3 vPos;
 
 void main() {
     vColor = color;
-    gl_Position = projectionMatrix * viewMatrix * rotationMatrix * modelMatrix * vec4(position, 1.0);
+    mat4 model = rotationMatrix * modelMatrix;
+    vNormal = mat3(transpose(inverse(model))) * normal;
+//    vNormal = normal;
+//    vNormal = vec3(0,0,1);
+    vPos = vec3(model * vec4(position, 1.0));
+    gl_Position = projectionMatrix * viewMatrix * model * vec4(position, 1.0);
 }

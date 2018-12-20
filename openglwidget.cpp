@@ -32,7 +32,7 @@ void OpenGLWidget::resizeGL(int width, int height) {
     glViewport(0, 0, width, height);
     m_projectionMatrix.setToIdentity();
     double ratio = (double) width / height;
-    m_projectionMatrix.perspective(90, ratio, 0.1, 10);
+    m_projectionMatrix.perspective(120, ratio, 0.1, 20);
 }
 
 void OpenGLWidget::paintGL() {
@@ -113,8 +113,13 @@ void OpenGLWidget::render() {
     rubik_program->bind();
     rubik_program->setUniformValue("projectionMatrix", m_projectionMatrix);
     rubik_program->setUniformValue("viewMatrix", m_viewMatrix);
+    rubik_program->setUniformValue("cameraPos", m_camera->getPosition());
+    rubik_program->setUniformValue("material_type", 3);
+    rubik_program->setUniformValue("skybox", 1);
+    m_skybox->getSkyBoxTexture()->bind(1);
     rubik_program->release();
     m_rubik->render();
+    m_skybox->getSkyBoxTexture()->release();
 
     // SkyBox
     QOpenGLShaderProgram* skybox_program = m_skybox->getShader()->getProgram();

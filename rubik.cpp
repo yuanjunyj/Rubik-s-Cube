@@ -1,7 +1,7 @@
 #include "rubik.h"
 
 #define CUBE_LENGTH 1.0
-#define SCALE 0.9
+#define SCALE 1.0
 #define CUBE_SUM 27 // 3 * 3 * 3
 
 

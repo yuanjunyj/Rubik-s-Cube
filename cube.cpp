@@ -1,7 +1,8 @@
 #include "cube.h"
 #include <QOpenGLShaderProgram>
 
-const QVector3D Cube::s_base_color = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
+//const QVector3D Cube::s_base_color = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
+const QVector3D Cube::s_base_color = QVector3D(1, 1, 1); // White
 
 Cube::Cube() :
     m_length(1.0),

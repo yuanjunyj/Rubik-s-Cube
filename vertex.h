@@ -14,8 +14,8 @@ public:
 
 public:
     QVector3D position;
-    QVector2D texCoord;
     QVector3D normal;
+    QVector2D texCoord;
     QVector3D color;
 };
 
