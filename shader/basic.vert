@@ -18,8 +18,6 @@ void main() {
     vColor = color;
     mat4 model = rotationMatrix * modelMatrix;
     vNormal = mat3(transpose(inverse(model))) * normal;
-//    vNormal = normal;
-//    vNormal = vec3(0,0,1);
     vPos = vec3(model * vec4(position, 1.0));
     gl_Position = projectionMatrix * viewMatrix * model * vec4(position, 1.0);
 }

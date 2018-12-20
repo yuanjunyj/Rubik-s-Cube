@@ -17,6 +17,7 @@ public:
 
 private:
     static const QVector3D s_base_color;
+    static const QString s_facets_order;
     double m_length;
     Vertex *m_facets, *m_pasters;
     int m_pasters_count;

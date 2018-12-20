@@ -3,6 +3,7 @@
 
 //const QVector3D Cube::s_base_color = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
 const QVector3D Cube::s_base_color = QVector3D(1, 1, 1); // White
+const QString Cube::s_facets_order = "FBUDRL";
 
 Cube::Cube() :
     m_length(1.0),
@@ -91,21 +92,21 @@ void Cube::createBlock() {
     m_facets[22].setNode(positions[3], normals[4], texCoords[1]);
     m_facets[23].setNode(positions[1], normals[4], texCoords[2]);
 
-    // Left
-    m_facets[24].setNode(positions[2], normals[3], texCoords[0]);
-    m_facets[25].setNode(positions[3], normals[3], texCoords[2]);
-    m_facets[26].setNode(positions[6], normals[3], texCoords[1]);
-    m_facets[27].setNode(positions[7], normals[3], texCoords[3]);
-    m_facets[28].setNode(positions[6], normals[3], texCoords[1]);
-    m_facets[29].setNode(positions[3], normals[3], texCoords[2]);
-
     // Right
-    m_facets[30].setNode(positions[0], normals[0], texCoords[0]);
-    m_facets[31].setNode(positions[1], normals[0], texCoords[2]);
-    m_facets[32].setNode(positions[4], normals[0], texCoords[1]);
-    m_facets[33].setNode(positions[5], normals[0], texCoords[3]);
-    m_facets[34].setNode(positions[4], normals[0], texCoords[1]);
-    m_facets[35].setNode(positions[1], normals[0], texCoords[2]);
+    m_facets[24].setNode(positions[0], normals[0], texCoords[0]);
+    m_facets[25].setNode(positions[1], normals[0], texCoords[2]);
+    m_facets[26].setNode(positions[4], normals[0], texCoords[1]);
+    m_facets[27].setNode(positions[5], normals[0], texCoords[3]);
+    m_facets[28].setNode(positions[4], normals[0], texCoords[1]);
+    m_facets[29].setNode(positions[1], normals[0], texCoords[2]);
+
+    // Left
+    m_facets[30].setNode(positions[2], normals[3], texCoords[0]);
+    m_facets[31].setNode(positions[3], normals[3], texCoords[2]);
+    m_facets[32].setNode(positions[6], normals[3], texCoords[1]);
+    m_facets[33].setNode(positions[7], normals[3], texCoords[3]);
+    m_facets[34].setNode(positions[6], normals[3], texCoords[1]);
+    m_facets[35].setNode(positions[3], normals[3], texCoords[2]);
 
     // Facets Buffer
     m_blockBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
@@ -130,6 +131,28 @@ void Cube::createPasters() {
         for (int j = 0; j < 6; ++j) {
                 m_pasters[6 * i + j] = m_facets[6 * facet_index + j];
                 m_pasters[6 * i + j].setColor(m_color[facet_index]);
+                switch (facet_index) {
+                case 0:
+                case 1:
+                    m_pasters[6 * i + j].position.setX(m_pasters[6 * i + j].position.x() * 0.8);
+                    m_pasters[6 * i + j].position.setY(m_pasters[6 * i + j].position.y() * 0.8);
+                    m_pasters[6 * i + j].position.setZ(m_pasters[6 * i + j].position.z() + 0.01 * (0.5 - facet_index));
+                    break;
+                case 2:
+                case 3:
+                    m_pasters[6 * i + j].position.setX(m_pasters[6 * i + j].position.x() * 0.8);
+                    m_pasters[6 * i + j].position.setZ(m_pasters[6 * i + j].position.z() * 0.8);
+                    m_pasters[6 * i + j].position.setY(m_pasters[6 * i + j].position.y() + 0.01 * (2.5 - facet_index));
+                    break;
+                case 4:
+                case 5:
+                    m_pasters[6 * i + j].position.setZ(m_pasters[6 * i + j].position.z() * 0.8);
+                    m_pasters[6 * i + j].position.setY(m_pasters[6 * i + j].position.y() * 0.8);
+                    m_pasters[6 * i + j].position.setX(m_pasters[6 * i + j].position.x() + 0.01 * (4.5 - facet_index));
+                    break;
+                default:
+                    break;
+                }
         }
     }
     m_pasterBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
@@ -156,17 +179,16 @@ void Cube::rotate(int angle, QVector3D axis) {
 }
 
 void Cube::setFacetColor(QChar facet, QVector3D color) {
-    const QString facets_order = "FBUDLR";
-    m_color[facets_order.indexOf(facet)] = color;
+    m_color[s_facets_order.indexOf(facet)] = color;
 }
 
 void Cube::render(Shader* shader) {
     QOpenGLShaderProgram* program = shader->getProgram();
 
-    int s_positionLoc = program->attributeLocation("position"),
-        s_normalLoc = program->attributeLocation("normal"),
-        s_texCoordLoc = program->attributeLocation("texCoord"),
-        s_colorLoc = program->attributeLocation("color");
+    int positionLoc = program->attributeLocation("position"),
+        normalLoc = program->attributeLocation("normal"),
+        texCoordLoc = program->attributeLocation("texCoord"),
+        colorLoc = program->attributeLocation("color");
 
     program->bind();
 
@@ -176,11 +198,11 @@ void Cube::render(Shader* shader) {
     // Block buffer
     m_blockBuffer.bind();
     int offset = 0;
-    setVertexAttribute(program, s_positionLoc, GL_FLOAT, 3, offset);
+    setVertexAttribute(program, positionLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
-    setVertexAttribute(program, s_normalLoc, GL_FLOAT, 3, offset);
+    setVertexAttribute(program, normalLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
-    setVertexAttribute(program, s_texCoordLoc, GL_FLOAT, 2, offset);
+    setVertexAttribute(program, texCoordLoc, GL_FLOAT, 2, offset);
     m_blockBuffer.release();
     program->setUniformValue("useColor", false);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
@@ -188,21 +210,19 @@ void Cube::render(Shader* shader) {
     // Paster buffer
     m_pasterBuffer.bind();
     offset = 0;
-    setVertexAttribute(program, s_positionLoc, GL_FLOAT, 3, offset);
+    setVertexAttribute(program, positionLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
-    setVertexAttribute(program, s_normalLoc, GL_FLOAT, 3, offset);
+    setVertexAttribute(program, normalLoc, GL_FLOAT, 3, offset);
     offset += 3 * sizeof(GLfloat);
-    setVertexAttribute(program, s_texCoordLoc, GL_FLOAT, 2, offset);
+    setVertexAttribute(program, texCoordLoc, GL_FLOAT, 2, offset);
     offset += 2 * sizeof(GLfloat);
-    setVertexAttribute(program, s_colorLoc, GL_FLOAT, 3, offset);
+    setVertexAttribute(program, colorLoc, GL_FLOAT, 3, offset);
     m_pasterBuffer.release();
     program->setUniformValue("useColor", true);
     glDepthFunc(GL_LEQUAL);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
     glDepthFunc(GL_LESS);
     program->release();
-
-
 }
 
 void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {
