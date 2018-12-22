@@ -4,5 +4,7 @@
         <file>shader/basic.vert</file>
         <file>shader/environment.frag</file>
         <file>shader/environment.vert</file>
+        <file>shader/depth.frag</file>
+        <file>shader/depth.vert</file>
     </qresource>
 </RCC>

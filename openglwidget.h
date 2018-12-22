@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "rubik.h"
 #include "skybox.h"
+#include "depthmap.h"
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -28,6 +29,7 @@ protected:
 private:
     void initialize();
     void render();
+    void renderShadow();
 
 private:
     Camera* m_camera;
@@ -42,6 +44,7 @@ private:
     QMatrix4x4 m_viewMatrix, m_projectionMatrix;
     Rubik* m_rubik;
     SkyBox* m_skybox;
+    DepthMap* m_depthmap;
 
 public slots:
     void unlockKey();

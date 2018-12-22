@@ -4,6 +4,7 @@
 #define CUBE_LENGTH 1.0
 #define SCALE 0.95
 #define CUBE_SUM 27 // 3 * 3 * 3
+#define CUBE_FACES 6
 
 
 Rubik::Rubik()
@@ -17,11 +18,12 @@ Rubik::Rubik()
 }
 
 Rubik::~Rubik() {
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < CUBE_FACES; ++i) {
         m_texture[i]->destroy();
         delete m_texture[i];
     }
     delete [] m_texture;
+    delete m_shader;
 }
 
 void Rubik::setParent(OpenGLWidget* parent) {
@@ -59,7 +61,7 @@ void Rubik::createCubes() {
 
 void Rubik::createImageTexture(const QString *filepath) {
     m_texture = new QOpenGLTexture*[6];
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < CUBE_FACES; ++i) {
         m_texture[i] = new QOpenGLTexture(QOpenGLTexture::Target2D);
         QImage image(filepath[i]);
         Q_ASSERT(!filepath[i].isNull());
@@ -75,18 +77,27 @@ void Rubik::render() {
     program->setUniformValue("rotationMatrix", m_rotationMatrix);
     program->setUniformValue("useImage", false);
     program->setUniformValue("useColor", false);
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < CUBE_FACES; ++i) {
         const std::string loc = "images[" + std::to_string(i) + "]";
-        program->setUniformValue(loc.c_str(), i + 1);
-        m_texture[i]->bind(i + 1);
+        program->setUniformValue(loc.c_str(), i + 100);
+        m_texture[i]->bind(i + 100);
     }
     program->release();
     for (int i = 0; i < CUBE_SUM; ++i) {
-        m_cubes[i].render(m_shader);
+        m_cubes[i].render(program);
     }
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < CUBE_FACES; ++i) {
         m_texture[i]->release();
     }
+}
+
+void Rubik::renderShadow(QOpenGLShaderProgram *depthProgram) {
+    depthProgram->bind();
+    depthProgram->setUniformValue("rotationMatrix", m_rotationMatrix);
+    for (int i = 0; i < CUBE_SUM; ++i) {
+        m_cubes[i].renderShadow(depthProgram);
+    }
+    depthProgram->release();
 }
 
 void Rubik::rotate(float angle, QVector3D axis) {
@@ -149,7 +160,6 @@ void Rubik::screw(QString step) {
     // Create animation object
     m_animation = new Animation(this);
     m_animation->setRotationAttributes(angle, axis);
-
     // Compute new cube position
     int new_position[3][3][3];
     for (int i = 0; i < 3; ++i)

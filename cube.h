@@ -31,7 +31,8 @@ public:
     void rotate(int angle, QVector3D axis); // angle should be multiples of 90
     void setFacet(QChar facet, QVector3D color, int x, int y);
     void createPasters();
-    void render(Shader* shader);
+    void render(QOpenGLShaderProgram* program);
+    void renderShadow(QOpenGLShaderProgram *depthProgram);
 
 private:
     void initialize();

@@ -9,7 +9,8 @@ SOURCES += \
     camera.cpp \
     shader.cpp \
     animation.cpp \
-    skybox.cpp
+    skybox.cpp \
+    depthmap.cpp
 
 HEADERS += \
     openglwidget.h \
@@ -19,7 +20,8 @@ HEADERS += \
     camera.h \
     shader.h \
     animation.h \
-    skybox.h
+    skybox.h \
+    depthmap.h
 
 RESOURCES += \
     shaders.qrc \

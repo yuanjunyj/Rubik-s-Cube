@@ -1,6 +1,8 @@
 #include "cube.h"
 #include <QOpenGLShaderProgram>
 
+#define SHADOW_TEXTURE_UNIT GL_TEXTURE0
+
 //const QVector3D Cube::s_base_color = QVector3D(47 / 255., 79 / 255., 79 / 255.); // DarkSlateGray
 const QVector3D Cube::s_base_color = QVector3D(1, 1, 1); // White
 const QString Cube::s_facets_order = "FBUDRL";
@@ -186,9 +188,7 @@ void Cube::setFacet(QChar facet, QVector3D color, int x, int y) {
     }
 }
 
-void Cube::render(Shader* shader) {
-    QOpenGLShaderProgram* program = shader->getProgram();
-
+void Cube::render(QOpenGLShaderProgram* program) {
     int positionLoc = program->attributeLocation("position"),
         normalLoc = program->attributeLocation("normal"),
         texCoordLoc = program->attributeLocation("texCoord"),
@@ -231,6 +231,15 @@ void Cube::render(Shader* shader) {
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
     glDepthFunc(GL_LESS);
     program->release();
+}
+
+void Cube::renderShadow(QOpenGLShaderProgram *depthProgram) {
+    m_blockBuffer.bind();
+    depthProgram->enableAttributeArray("position");
+    depthProgram->setAttributeBuffer("position", GL_FLOAT, 0, 3, sizeof(Vertex));
+    depthProgram->setUniformValue("modelMatrix", m_modelMatrix);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
+    m_blockBuffer.release();
 }
 
 void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {

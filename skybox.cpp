@@ -113,6 +113,7 @@ void SkyBox::destroy() {
     m_vertexBuffer.destroy();
     m_cubemap_texture->destroy();
     delete m_cubemap_texture;
+    delete m_shader;
 }
 
 void SkyBox::render() {

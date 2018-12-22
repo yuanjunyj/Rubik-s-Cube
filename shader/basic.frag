@@ -1,5 +1,5 @@
 #version 330 core
-
+#extension GL_NV_shadow_samplers_cube : enable
 in vec3 vColor;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -11,9 +11,30 @@ uniform bool useColor;
 uniform bool useImage;
 
 uniform vec3 cameraPos;
+uniform sampler2D shadow;
 uniform samplerCube skybox;
 uniform sampler2D images[6];
 uniform int material_type;
+
+varying vec3 viewSpacePosition;
+varying vec4 vShadowCoord;
+
+float unpack(vec4 colour) {
+    const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
+                                1.0 / (256.0 * 256.0),
+                                1.0 / 256.0,
+                                1);
+    return dot(colour, bitShifts);
+}
+
+float shadowSimple() {
+    vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
+    shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
+    vec4 packedZValue = texture2D(shadow, shadowMapPosition.st);
+    float distanceFromLight = unpack(packedZValue);
+    float bias = 1e-6;
+    return float(distanceFromLight > shadowMapPosition.z - bias);
+}
 
 void main()
 {
@@ -24,6 +45,12 @@ void main()
 
     vec4 reflectedColor = textureCube(skybox, R);
     vec4 refractedColor = textureCube(skybox, T);
+
+    float shadowColor = 1.0;
+    if (vShadowCoord.w > 0.0) {
+        shadowColor = shadowSimple();
+        shadowColor = shadowColor * 0.5 + 0.5;
+    }
 
     if (useColor == true) {
         gl_FragColor = vec4(vColor, 1.0);
@@ -46,4 +73,6 @@ void main()
             gl_FragColor = mix(refractedColor, reflectedColor, fresnel);
         }
     }
+
+    gl_FragColor = shadowColor * gl_FragColor;
 }

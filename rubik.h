@@ -23,6 +23,7 @@ public:
 public:
     void setParent(OpenGLWidget* parent);
     void render();
+    void renderShadow(QOpenGLShaderProgram *depthProgram);
     Shader* getShader() const { return m_shader; }
     void rotate(float angle, QVector3D axis);
     void screw(QString step);

@@ -10,6 +10,12 @@ uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 rotationMatrix;
 
+uniform mat4 lightViewMatrix;
+uniform mat4 lightProjectionMatrix;
+
+varying vec3 viewSpacePosition;
+varying vec4 vShadowCoord;
+
 out vec3 vColor;
 out vec3 vNormal;
 out vec3 vPos;
@@ -35,6 +41,9 @@ void main() {
     } else if (normal == vec3(-1, 0, 0)) {
         facetIndex = 5;
     }
+
+    viewSpacePosition = vec3(viewMatrix * model * vec4(position, 1.0));
+    vShadowCoord = lightProjectionMatrix * lightViewMatrix * model * vec4(position, 1.0);
 
     gl_Position = projectionMatrix * viewMatrix * model * vec4(position, 1.0);
 }

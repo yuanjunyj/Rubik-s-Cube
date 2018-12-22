@@ -8,7 +8,7 @@ OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
     m_mouseStatus(Released),
     m_keyLock(false)
 {
-
+    setFixedSize(1024, 1024);
 }
 
 OpenGLWidget::~OpenGLWidget() {
@@ -19,12 +19,13 @@ void OpenGLWidget::initializeGL() {
     initializeOpenGLFunctions();
     glClearColor(1, 1, 1, 1);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+//    glEnable(GL_LINE_SMOOTH);
+//    glEnable(GL_POLYGON_SMOOTH);
+//    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+//    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glEnable(GL_BLEND);
     initialize();
 }
 
@@ -36,6 +37,9 @@ void OpenGLWidget::resizeGL(int width, int height) {
 }
 
 void OpenGLWidget::paintGL() {
+    // Shadow
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderShadow();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     render();
 }
@@ -114,13 +118,17 @@ void OpenGLWidget::render() {
     rubik_program->setUniformValue("projectionMatrix", m_projectionMatrix);
     rubik_program->setUniformValue("viewMatrix", m_viewMatrix);
     rubik_program->setUniformValue("cameraPos", m_camera->getPosition());
-    rubik_program->setUniformValue("material_type", 3);
-    rubik_program->setUniformValue("skybox", 0);
-    m_skybox->getSkyBoxTexture()->bind(0);
+    rubik_program->setUniformValue("lightViewMatrix", m_depthmap->getLightViewMatrix());
+    rubik_program->setUniformValue("lightProjectionMatrix", m_depthmap->getLightProjectionMatrix());
+    rubik_program->setUniformValue("material_type", 0);
+    rubik_program->setUniformValue("skybox", 10);
+    m_skybox->getSkyBoxTexture()->bind(10);
+    rubik_program->setUniformValue(rubik_program->uniformLocation("shadow"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_depthmap->getShadowTexture());
     rubik_program->release();
     m_rubik->render();
     m_skybox->getSkyBoxTexture()->release();
-
     // SkyBox
     QOpenGLShaderProgram* skybox_program = m_skybox->getShader()->getProgram();
     skybox_program->bind();
@@ -132,6 +140,18 @@ void OpenGLWidget::render() {
     m_skybox->render();
 }
 
+void OpenGLWidget::renderShadow() {
+    QOpenGLShaderProgram* program = m_depthmap->getShader()->getProgram();
+    QOpenGLFramebufferObject* FBO = m_depthmap->getFBO();
+    FBO->bind();
+    glCullFace(GL_FRONT);
+    m_depthmap->setLight(width(), height());
+    m_rubik->renderShadow(program);
+    glCullFace(GL_BACK);
+    FBO->release();
+    glViewport(0, 0, width(), height());
+}
+
 void OpenGLWidget::initialize() {
     m_camera = new Camera;
     m_rubik = new Rubik;
@@ -139,6 +159,7 @@ void OpenGLWidget::initialize() {
     connect(m_rubik, SIGNAL(screwDone()), this, SLOT(unlockKey()));
     m_skybox = new SkyBox;
     m_viewMatrix = m_camera->getViewMatrix();
+    m_depthmap = new DepthMap;
 }
 
 void OpenGLWidget::unlockKey() {
