@@ -22,6 +22,7 @@ public:
 
 public:
     void setParent(OpenGLWidget* parent);
+    void setMaterialType(int type);
     void render();
     void renderShadow(QOpenGLShaderProgram *depthProgram);
     Shader* getShader() const { return m_shader; }

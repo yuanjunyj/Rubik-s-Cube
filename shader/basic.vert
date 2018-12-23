@@ -17,6 +17,7 @@ varying vec3 viewSpacePosition;
 varying vec4 vShadowCoord;
 
 out vec3 vColor;
+out vec3 vNorm;
 out vec3 vNormal;
 out vec3 vPos;
 out vec2 vTexCoord;
@@ -25,8 +26,9 @@ flat out int facetIndex;
 void main() {
     vColor = color;
     mat4 model = rotationMatrix * modelMatrix;
-    vNormal = mat3(transpose(inverse(model))) * normal;
+    vNorm = mat3(transpose(inverse(model))) * normal;
     vPos = vec3(model * vec4(position, 1.0));
+    vNormal = vec3(model * vec4(normal, 1.0));
     vTexCoord = texCoord;
     if (normal == vec3(0, 0, 1)) {
         facetIndex = 0;

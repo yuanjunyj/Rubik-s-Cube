@@ -1,6 +1,7 @@
 #version 330 core
 
 in vec3 vColor;
+in vec3 vNorm;
 in vec3 vNormal;
 in vec2 vTexCoord;
 in vec3 vPos;
@@ -19,6 +20,9 @@ uniform int material_type;
 varying vec3 viewSpacePosition;
 varying vec4 vShadowCoord;
 
+uniform vec3 lightPosition;
+uniform vec3 viewPosition;
+
 float unpack(vec4 colour) {
     const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
                                 1.0 / (256.0 * 256.0),
@@ -28,28 +32,26 @@ float unpack(vec4 colour) {
 }
 
 float PCF() {
-    float bias = 0;
-    float pcfValue = 5e-4;
+    float bias = 0.000005;
+    float pcfValue = 0;
     vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
     shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
     float currentDepth = shadowMapPosition.z;
     vec2 texelSize = 1.0 / textureSize(shadow, 0);
-    for (int x = -1; x <= 1; ++x) {
-        for (int y = -1; y <= 1; ++y) {
+    for (int x = -2; x <= 2; ++x) {
+        for (int y = -2; y <= 2; ++y) {
             vec4 packedZValue = texture(shadow, shadowMapPosition.st + vec2(x, y) * texelSize);
             float closestDepth = unpack(packedZValue);
             pcfValue += float(currentDepth - bias > closestDepth);
         }
     }
-    pcfValue /= 9.0;
-    if(shadowMapPosition.z > 1.0)
-        pcfValue = 0.0;
+    pcfValue /= 25.0;
     return pcfValue;
 }
 
 void main()
 {
-    vec3 N = normalize(vNormal);
+    vec3 N = normalize(vNorm);
     vec3 I = normalize(vPos - cameraPos);
     vec3 R = reflect(I, N);
     vec3 T = refract(I, N, 0.66);
@@ -84,5 +86,18 @@ void main()
         }
     }
 
-    gl_FragColor = shadowColor * gl_FragColor;
+    // Shadow
+    gl_FragColor *= shadowColor;
+
+    // Phong
+    vec3 pL = normalize(vec3(lightPosition - vPos));
+    vec3 pV = normalize(cameraPos - vPos);
+    vec3 pR = reflect(-pL, normalize(vNormal));
+    float ambient = 0.8;
+    float diffuse = max(dot(pL, normalize(vNormal)), 0.0);
+    float specular = pow(max(dot(pR, pV), 0.0), 100);
+    float phongColor = diffuse + ambient + specular;
+
+    gl_FragColor *= phongColor;
+
 }

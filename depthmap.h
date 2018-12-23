@@ -11,22 +11,26 @@
 class DepthMap : protected QOpenGLFunctions
 {
 public:
-    DepthMap(int shadow_width = 1024, int shadow_height = 1024);
+    DepthMap(int shadow_width = 2048, int shadow_height = 2048);
     ~DepthMap();
     Shader* getShader() const { return m_shader; }
     QOpenGLFramebufferObject* getFBO() const { return m_fbo; }
     GLuint getShadowTexture() const { return m_fbo->texture(); }
     void bindShadowTexture(int pos);
     void releaseShadowTexture();
-    void setLight(int window_width, int window_height);
+    void updateLightMatrices(int window_width, int window_height);
     QMatrix4x4 getLightViewMatrix() const { return m_lightViewMatrix; }
     QMatrix4x4 getLightProjectionMatrix() const { return m_lightProjectionMatrix; }
+    QVector3D getLightPos() const { return m_lightPos; }
+    int getShadowMapWidth() const { return m_shadowWidth; }
+    int getShadowMapHeight() const { return m_shadowHeight; }
 
 private:
     int m_shadowWidth, m_shadowHeight;
     QOpenGLFramebufferObject* m_fbo;
     QOpenGLTexture* m_texture;
     QMatrix4x4 m_lightViewMatrix, m_lightProjectionMatrix;
+    QVector3D m_lightPos;
     Shader* m_shader;
 
 };

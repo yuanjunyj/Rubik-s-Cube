@@ -1,4 +1,5 @@
 #include "rubik.h"
+#include "openglwidget.h"
 #include <QImage>
 
 #define CUBE_LENGTH 1.0
@@ -29,6 +30,11 @@ Rubik::~Rubik() {
 
 void Rubik::setParent(OpenGLWidget* parent) {
     m_parent = parent;
+}
+
+void Rubik::setMaterialType(int type) {
+    m_materialType = type;
+    m_parent->unlockKey();
 }
 
 void Rubik::createCubes() {
