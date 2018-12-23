@@ -30,9 +30,9 @@ void DepthMap::releaseShadowTexture() {
 
 void DepthMap::setLight(int window_width, int window_height) {
     m_lightViewMatrix.setToIdentity();
-    m_lightViewMatrix.lookAt(QVector3D(5, 5, -5), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
+    m_lightViewMatrix.lookAt(QVector3D(-10, 10, 10), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
     m_lightProjectionMatrix.setToIdentity();
-    m_lightProjectionMatrix.perspective(120, (double) window_width / window_height, 0.1, 20);
+    m_lightProjectionMatrix.perspective(120, (double) window_width / window_height, 0.1, 100);
 
     glViewport(0, 0, m_shadowWidth, m_shadowHeight);
 

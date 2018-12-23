@@ -14,13 +14,12 @@ varying vec4 projectedPosition;
 void main( void )
 {
     mat4 model = rotationMatrix * modelMatrix;
-    vec3 finalPosition = position;
 
     projectedPosition =
             lightProjectionMatrix *
             lightViewMatrix *
             model *
-            vec4( finalPosition, 1.0 );
+            vec4( position, 1.0 );
 
     gl_Position = projectedPosition;
 }

@@ -8,7 +8,7 @@ OpenGLWidget::OpenGLWidget(QOpenGLWidget *widget) :
     m_mouseStatus(Released),
     m_keyLock(false)
 {
-    setFixedSize(1024, 1024);
+//    setFixedSize(1024, 1024);
 }
 
 OpenGLWidget::~OpenGLWidget() {
@@ -120,7 +120,6 @@ void OpenGLWidget::render() {
     rubik_program->setUniformValue("cameraPos", m_camera->getPosition());
     rubik_program->setUniformValue("lightViewMatrix", m_depthmap->getLightViewMatrix());
     rubik_program->setUniformValue("lightProjectionMatrix", m_depthmap->getLightProjectionMatrix());
-    rubik_program->setUniformValue("material_type", 0);
     rubik_program->setUniformValue("skybox", 10);
     m_skybox->getSkyBoxTexture()->bind(10);
     rubik_program->setUniformValue(rubik_program->uniformLocation("shadow"), 0);

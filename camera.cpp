@@ -4,7 +4,7 @@
 Camera::Camera() :
     m_front(QVector3D(-1, -1, -1)),
     m_up(QVector3D(0, 1, 0)),
-    m_pos(QVector3D(5, 5, 5))
+    m_pos(QVector3D(3, 3, 3))
 {
 
 }

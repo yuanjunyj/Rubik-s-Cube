@@ -24,7 +24,6 @@ void Animation::start() {
     m_timer->setTimerType(Qt::PreciseTimer);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(animate()));
     m_timer->start(10);
-    qDebug() << m_animated_cubes.size();
 }
 
 void Animation::animate() {

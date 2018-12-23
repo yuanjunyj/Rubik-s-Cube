@@ -223,10 +223,10 @@ void Cube::render(QOpenGLShaderProgram* program) {
     offset += 2 * sizeof(GLfloat);
     setVertexAttribute(program, colorLoc, GL_FLOAT, 3, offset);
     m_pasterBuffer.release();
-//    program->setUniformValue("useColor", true);
-//    program->setUniformValue("useImage", false);
-    program->setUniformValue("useColor", false);
-    program->setUniformValue("useImage", true);
+    program->setUniformValue("useColor", true);
+    program->setUniformValue("useImage", false);
+//    program->setUniformValue("useColor", false);
+//    program->setUniformValue("useImage", true);
     glDepthFunc(GL_LEQUAL);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
     glDepthFunc(GL_LESS);
@@ -240,6 +240,13 @@ void Cube::renderShadow(QOpenGLShaderProgram *depthProgram) {
     depthProgram->setUniformValue("modelMatrix", m_modelMatrix);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * 6);
     m_blockBuffer.release();
+
+    m_pasterBuffer.bind();
+    depthProgram->enableAttributeArray("position");
+    depthProgram->setAttributeBuffer("position", GL_FLOAT, 0, 3, sizeof(Vertex));
+    depthProgram->setUniformValue("modelMatrix", m_modelMatrix);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
+    m_pasterBuffer.release();
 }
 
 void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_location, GLenum element_type, quint32 element_size, quint32 offset) {

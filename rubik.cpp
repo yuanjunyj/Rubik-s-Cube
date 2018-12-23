@@ -9,6 +9,7 @@
 
 Rubik::Rubik()
 {
+    m_materialType = 0;
     m_rotationMatrix.setToIdentity();
     createCubes();
     m_shader = new Shader;
@@ -75,6 +76,7 @@ void Rubik::render() {
     QOpenGLShaderProgram* program = m_shader->getProgram();
     program->bind();
     program->setUniformValue("rotationMatrix", m_rotationMatrix);
+    program->setUniformValue("material_type", m_materialType);
     program->setUniformValue("useImage", false);
     program->setUniformValue("useColor", false);
     for (int i = 0; i < CUBE_FACES; ++i) {

@@ -1,5 +1,5 @@
 #version 330 core
-#extension GL_NV_shadow_samplers_cube : enable
+
 in vec3 vColor;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -27,13 +27,24 @@ float unpack(vec4 colour) {
     return dot(colour, bitShifts);
 }
 
-float shadowSimple() {
+float PCF() {
+    float bias = 0;
+    float pcfValue = 5e-4;
     vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
     shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
-    vec4 packedZValue = texture2D(shadow, shadowMapPosition.st);
-    float distanceFromLight = unpack(packedZValue);
-    float bias = 1e-6;
-    return float(distanceFromLight > shadowMapPosition.z - bias);
+    float currentDepth = shadowMapPosition.z;
+    vec2 texelSize = 1.0 / textureSize(shadow, 0);
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            vec4 packedZValue = texture(shadow, shadowMapPosition.st + vec2(x, y) * texelSize);
+            float closestDepth = unpack(packedZValue);
+            pcfValue += float(currentDepth - bias > closestDepth);
+        }
+    }
+    pcfValue /= 9.0;
+    if(shadowMapPosition.z > 1.0)
+        pcfValue = 0.0;
+    return pcfValue;
 }
 
 void main()
@@ -48,8 +59,7 @@ void main()
 
     float shadowColor = 1.0;
     if (vShadowCoord.w > 0.0) {
-        shadowColor = shadowSimple();
-        shadowColor = shadowColor * 0.5 + 0.5;
+        shadowColor = (1.0 - PCF()) * 0.8 + 0.2;
     }
 
     if (useColor == true) {

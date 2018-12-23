@@ -40,6 +40,7 @@ private:
     QMatrix4x4 m_rotationMatrix;
     int m_position[3][3][3];
     Animation *m_animation;
+    int m_materialType;
 
 signals:
     void screwDone();
