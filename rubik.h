@@ -31,7 +31,7 @@ public:
     void screw(QString step);
     void setFocusCube(int ord);
     void cancelFocusCube(int ord);
-    void getLayerRecord(int (&layerRecord)[3][10], int type);
+    bool getLayerRecord(int (&layerRecord)[3][10], int type);
 
 private:
     void createCubes();
