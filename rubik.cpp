@@ -18,6 +18,7 @@ const QVector3D normals[6] = {
     QVector3D(1, 0, 0),
     QVector3D(-1, 0, 0)
 }; // Same order as Cube::s_facets_order
+int current_step = 0;
 
 Rubik::Rubik()
 {
@@ -25,6 +26,7 @@ Rubik::Rubik()
     m_useColor = true;
     m_useImage = false;
     m_materialType = 0;
+    m_screwStepsLeft = 0;
     m_rotationMatrix.setToIdentity();
     createCubes();
     for (int k = 0; k < CUBE_FACES; ++k)
@@ -317,6 +319,12 @@ void Rubik::screw(QString step) {
     m_animation->start();
 }
 
+void Rubik::toScrew() {
+    --m_screwStepsLeft;
+    screw(m_solution[current_step]);
+    ++current_step;
+}
+
 void Rubik::animationFinished() {
     delete m_animation;
     m_screwing = false;
@@ -332,8 +340,11 @@ void Rubik::animationFinished() {
             for (int j = 0; j < 3; ++j) {
                 m_color[k][i][j] = new_color[k][i][j];
             }
-
-    emit screwDone();
+    if (m_screwStepsLeft == 0) {
+        emit screwDone();
+    } else {
+        toScrew();
+    }
 }
 
 void Rubik::setFocusCube(int ord) {
@@ -448,4 +459,13 @@ void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
         layerRecord[1][9] = 7;
         layerRecord[2][9] = 6;
     }
+}
+
+void Rubik::solve() {
+    m_solution.clear();
+    m_solution.push_back("U");
+    m_solution.push_back("L'");
+    m_screwStepsLeft = m_solution.size();
+    current_step = 0;
+    toScrew();
 }

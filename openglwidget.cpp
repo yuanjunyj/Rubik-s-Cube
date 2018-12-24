@@ -110,6 +110,10 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Space:
         m_rubik->togglePasterType();
         break;
+    case Qt::Key_Return:
+        m_keyLock = true;
+        m_rubik->solve();
+        break;
     default:
         break;
     }
@@ -437,4 +441,3 @@ void OpenGLWidget::getScrewDirAngle(QPoint delta) {
     }
     screwCube(layerRecord[index][9], direction, angle);
 }
-

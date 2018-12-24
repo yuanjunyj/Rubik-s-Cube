@@ -11,7 +11,6 @@ uniform vec3 baseColor;
 uniform bool isBlock;
 uniform bool useColor;
 uniform bool useImage;
-uniform bool focus;
 
 uniform vec3 cameraPos;
 uniform sampler2D shadow;

@@ -32,10 +32,12 @@ public:
     void setFocusCube(int ord);
     void cancelFocusCube(int ord);
     void getLayerRecord(int (&layerRecord)[3][10], int type);
+    void solve();
 
 private:
     void createCubes();
     void createImageTexture(const QString *filepath);
+    void toScrew();
 
 private:
     OpenGLWidget* m_parent;
@@ -48,6 +50,8 @@ private:
     Animation *m_animation;
     bool m_screwing, m_useColor, m_useImage;
     int m_materialType;
+    int m_screwStepsLeft;
+    std::vector<QString> m_solution;
 
 signals:
     void screwDone();
