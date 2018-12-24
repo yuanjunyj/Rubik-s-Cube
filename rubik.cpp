@@ -355,7 +355,7 @@ void Rubik::cancelFocusCube(int ord) {
     m_cubes[ord].cancelFocus();
 }
 
-void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
+bool Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
     int sideCenterCubes[6];
     sideCenterCubes[0] = m_position[0][1][1];
     sideCenterCubes[1] = m_position[1][0][1];
@@ -368,6 +368,8 @@ void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
     for(int i = 0; i < 6; i++) {
         sideCenterCubesPos[i] = m_cubes[sideCenterCubes[i]].getPosition(m_rotationMatrix);
     }
+
+    bool result;
 
     int Ord = -1;
     double m_min = 100;
@@ -384,6 +386,31 @@ void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
                 Ord = i;
                 m_min = sideCenterCubesPos[i][type];
             }
+        }
+    }
+
+    if(type == 0) {
+        if(Ord <= 2) {
+            result = false;
+        }
+        else {
+            result = true;
+        }
+    }
+    if(type == 1) {
+        if(Ord <= 2) {
+            result = false;
+        }
+        else {
+            result = true;
+        }
+    }
+    if(type == 2) {
+        if(Ord <= 2) {
+            result = true;
+        }
+        else {
+            result = false;
         }
     }
 
@@ -459,6 +486,7 @@ void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
         layerRecord[1][9] = 7;
         layerRecord[2][9] = 6;
     }
+    return result;
 }
 
 void Rubik::solve() {

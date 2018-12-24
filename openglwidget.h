@@ -62,6 +62,7 @@ private:
     int fronting;
     int index;
     int layerRecord[3][10];
+    bool signal;
 
 public slots:
     void unlockKey();

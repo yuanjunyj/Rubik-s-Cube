@@ -70,6 +70,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event) {
         m_rubik->rotate(delta.x(), m_camera->getViewY());
         m_rubik->rotate(delta.y(), m_camera->getViewX());
         m_mousePos = event->pos();
+
         update();
     } else if (m_mouseStatus == LeftPressed) {
 
@@ -193,6 +194,7 @@ void OpenGLWidget::initialize() {
     fronting = 0;
     index = 0;
     clearLayerRecord();
+    signal = false;
 }
 
 void OpenGLWidget::unlockKey() {
@@ -260,7 +262,7 @@ void OpenGLWidget::clearLayerRecord() {
 }
 
 void OpenGLWidget::updateLayerRecord(int type) {
-    m_rubik->getLayerRecord(layerRecord, type);
+    signal = m_rubik->getLayerRecord(layerRecord, type);
 }
 
 void OpenGLWidget::setFocusCubes() {
@@ -437,6 +439,9 @@ void OpenGLWidget::getScrewDirAngle(QPoint delta) {
         }
     }
     if(layerRecord[index][9] == 5 || layerRecord[index][9] == 2 || layerRecord[index][9] == 8 || layerRecord[index][9] == 7) {
+        direction = 1 - direction;
+    }
+    if(signal) {
         direction = 1 - direction;
     }
     screwCube(layerRecord[index][9], direction, angle);
