@@ -23,6 +23,7 @@ private:
     QMatrix4x4 m_modelMatrix;
     QOpenGLBuffer m_blockBuffer, m_pasterBuffer;
     QVector3D m_color[6];
+    bool m_isFocused;
 
 public:
     void createBlock();
@@ -35,6 +36,9 @@ public:
     void createPasters();
     void render(QOpenGLShaderProgram* program);
     void renderShadow(QOpenGLShaderProgram *depthProgram);
+    void setFocus();
+    void cancelFocus();
+    QVector3D getPosition(QMatrix4x4 m_rotationMatrix);
 
 private:
     void initialize();

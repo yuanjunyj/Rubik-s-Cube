@@ -48,6 +48,13 @@ void OpenGLWidget::paintGL() {
 void OpenGLWidget::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::RightButton) {
         m_mouseStatus = RightPressed;
+        cancelFocusCubes();
+        clearLayerRecord();
+        uping = 0;
+        righting = 0;
+        fronting = 0;
+        index = 0;
+        update();
     } else if (event->button() == Qt::LeftButton) {
         m_mouseStatus = LeftPressed;
     }
@@ -70,6 +77,13 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void OpenGLWidget::mouseReleaseEvent(QMouseEvent* event) {
+    if(m_mouseStatus == LeftPressed) {
+        if(layerRecord[index][0] != -1 && m_keyLock == false) {
+            QPoint delta = event->pos() - m_mousePos;
+            getScrewDirAngle(delta);
+        }
+        update();
+    }
     m_mouseStatus = Released;
 }
 
@@ -78,17 +92,14 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
         return;
     }
     switch (event->key()) {
-    case Qt::Key_U:
-    case Qt::Key_D:
-    case Qt::Key_L:
-    case Qt::Key_R:
-    case Qt::Key_F:
-    case Qt::Key_B:
-    case Qt::Key_M:
-    case Qt::Key_E:
-    case Qt::Key_S:
-        m_rubik->screw(event->text().toUpper());
-        m_keyLock = true;
+    case Qt::Key_Up:
+        keyUpPressed();
+        break;
+    case Qt::Key_Right:
+        keyRightPressed();
+        break;
+    case Qt::Key_Down:
+        keyDownPressed();
         break;
     case Qt::Key_0:
     case Qt::Key_1:
@@ -102,6 +113,17 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
     default:
         break;
     }
+    update();
+}
+
+void OpenGLWidget::wheelEvent(QWheelEvent *event) {
+    if(event->delta() > 0) { // 向上
+        m_camera->getCloser();
+    }
+    else {
+        m_camera->getAway();
+    }
+    m_viewMatrix = m_camera->getViewMatrix();
     update();
 }
 
@@ -162,8 +184,257 @@ void OpenGLWidget::initialize() {
     m_viewMatrix = m_camera->getViewMatrix();
     m_depthmap = new DepthMap;
     m_depthmap->updateLightMatrices(width(), height());
+    uping = 0;
+    righting = 0;
+    fronting = 0;
+    index = 0;
+    clearLayerRecord();
 }
 
 void OpenGLWidget::unlockKey() {
     m_keyLock = false;
 }
+
+void OpenGLWidget::keyUpPressed() {
+    m_keyLock = false;
+    if(uping == 0) {
+        cancelFocusCubes();
+        index = 0;
+        uping = 1;
+        righting = 0;
+        fronting = 0;
+        clearLayerRecord();
+        updateLayerRecord(1);
+    }
+    else {
+        cancelFocusCubes();
+        index = (index + 1) % 3;
+    }
+    setFocusCubes();
+}
+
+void OpenGLWidget::keyDownPressed() {
+    if(fronting == 0) {
+        cancelFocusCubes();
+        index = 0;
+        fronting = 1;
+        uping = 0;
+        righting = 0;
+        clearLayerRecord();
+        updateLayerRecord(0);
+    }
+    else {
+        cancelFocusCubes();
+        index = (index + 1) % 3;
+    }
+    setFocusCubes();
+}
+
+void OpenGLWidget::keyRightPressed() {
+    if(righting == 0) {
+        cancelFocusCubes();
+        index = 0;
+        righting = 1;
+        uping = 0;
+        fronting = 0;
+        clearLayerRecord();
+        updateLayerRecord(2);
+    }
+    else {
+        cancelFocusCubes();
+        index = (index + 1) % 3;
+    }
+    setFocusCubes();
+}
+
+void OpenGLWidget::clearLayerRecord() {
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 10; j++) {
+            layerRecord[i][j] = -1;
+        }
+    }
+}
+
+void OpenGLWidget::updateLayerRecord(int type) {
+    m_rubik->getLayerRecord(layerRecord, type);
+}
+
+void OpenGLWidget::setFocusCubes() {
+    if(layerRecord[index][0] == -1) {
+        return;
+    }
+    for(int i = 0; i < 9; i++) {
+        m_rubik->setFocusCube(layerRecord[index][i]);
+    }
+}
+
+void OpenGLWidget::cancelFocusCubes() {
+    if(layerRecord[index][0] == -1) {
+        return;
+    }
+    for(int i = 0; i < 9; i++) {
+        m_rubik->cancelFocusCube(layerRecord[index][i]);
+    }
+}
+
+void OpenGLWidget::screwCube(int type, int direction, int angle) {
+    QString temp = "";
+    if(angle == 2) {
+        if(direction == 0)
+            temp = "2";
+        else
+            temp = "3";
+    }
+    else {
+        if(direction == 1)
+            temp = "\'";
+    }
+    m_keyLock = true;
+    if(type == 0) {
+        m_rubik->screw("L" + temp);
+    }
+    else if(type == 1) {
+        m_rubik->screw("M" + temp);
+    }
+    else if(type == 2) {
+        m_rubik->screw("R" + temp);
+    }
+    else if(type == 3) {
+        m_rubik->screw("D" + temp);
+    }
+    else if(type == 4) {
+        m_rubik->screw("E" + temp);
+    }
+    else if(type == 5) {
+        m_rubik->screw("U" + temp);
+    }
+    else if(type == 6) {
+        m_rubik->screw("B" + temp);
+    }
+    else if(type == 7) {
+        m_rubik->screw("S" + temp);
+    }
+    else {
+        m_rubik->screw("F" + temp);
+    }
+}
+
+void OpenGLWidget::getScrewDirAngle(QPoint delta) {
+    int key_move;
+    int direction, angle;
+    if(uping == 1) {
+        key_move = delta.x();
+        if(abs(key_move) > 250) {
+            if(key_move > 0) {
+                direction = 0;
+                angle = 2;
+                //screwCube(layerRecord[index][9], 0, 2);
+            }
+            else {
+                direction = 1;
+                angle = 2;
+                //screwCube(layerRecord[index][9], 1, 2);
+            }
+        }
+        else {
+            if(key_move > 0) {
+                direction = 0;
+                angle = 1;
+                //screwCube(layerRecord[index][9], 0, 1);
+            }
+            else {
+                direction = 1;
+                angle = 1;
+                //screwCube(layerRecord[index][9], 1, 1);
+            }
+        }
+    }
+    else if(righting == 1) {
+        key_move = delta.y();
+        if(abs(key_move) > 250) {
+            if(key_move > 0) {
+                direction = 1;
+                angle = 2;
+                //screwCube(layerRecord[index][9], 1, 2);
+            }
+            else {
+                direction = 0;
+                angle = 2;
+                //screwCube(layerRecord[index][9], 0, 2);
+            }
+        }
+        else {
+            if(key_move > 0) {
+                direction = 1;
+                angle = 1;
+                //screwCube(layerRecord[index][9], 1, 1);
+            }
+            else {
+                direction = 0;
+                angle = 1;
+                //screwCube(layerRecord[index][9], 0, 1);
+            }
+        }
+    }
+    else {
+        if(abs(delta.x()) > abs(delta.y())) {
+            key_move = delta.x();
+            if(abs(key_move) > 250) {
+                if(key_move > 0) {
+                    direction = 0;
+                    angle = 2;
+                    //screwCube(layerRecord[index][9], 0, 2);
+                }
+                else {
+                    direction = 1;
+                    angle = 2;
+                    //screwCube(layerRecord[index][9], 1, 2);
+                }
+            }
+            else {
+                if(key_move > 0) {
+                    direction = 0;
+                    angle = 1;
+                    //screwCube(layerRecord[index][9], 0, 1);
+                }
+                else {
+                    direction = 1;
+                    angle = 1;
+                    //screwCube(layerRecord[index][9], 1, 1);
+                }
+            }
+        }
+        else {
+            key_move = delta.y();
+            if(abs(key_move) > 250) {
+                if(key_move > 0) {
+                    direction = 1;
+                    angle = 2;
+                    //screwCube(layerRecord[index][9], 1, 2);
+                }
+                else {
+                    direction = 0;
+                    angle = 2;
+                    //screwCube(layerRecord[index][9], 0, 2);
+                }
+            }
+            else {
+                if(key_move > 0) {
+                    direction = 1;
+                    angle = 1;
+                    //screwCube(layerRecord[index][9], 1, 1);
+                }
+                else {
+                    direction = 0;
+                    angle = 1;
+                    //screwCube(layerRecord[index][9], 0, 1);
+                }
+            }
+        }
+    }
+    if(layerRecord[index][9] == 5 || layerRecord[index][9] == 2 || layerRecord[index][9] == 8 || layerRecord[index][9] == 7) {
+        direction = 1 - direction;
+    }
+    screwCube(layerRecord[index][9], direction, angle);
+}
+

@@ -25,6 +25,8 @@ varying vec4 vShadowCoord;
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 
+uniform bool isFocused;
+
 float unpack(vec4 colour) {
     const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
                                 1.0 / (256.0 * 256.0),
@@ -77,6 +79,10 @@ void main()
             gl_FragColor = vec4(vColor, 1.0);
         } else if (useImage == true) {
             gl_FragColor = texture2D(images[facetIndex], vTexCoord);
+        }
+
+        if(isFocused) {
+            gl_FragColor *= 2;
         }
     }
 

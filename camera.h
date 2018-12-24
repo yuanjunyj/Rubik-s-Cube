@@ -14,6 +14,8 @@ public:
     QVector3D getViewX() const { return QVector3D::crossProduct(m_front, m_up); }
     QVector3D getViewY() const { return QVector3D::crossProduct(-m_front, getViewX()); }
     QVector3D getViewZ() const { return -m_front; }
+    void getCloser();
+    void getAway();
 
 private:
     QVector3D m_front, m_up, m_pos;

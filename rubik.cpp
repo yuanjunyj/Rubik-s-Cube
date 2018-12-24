@@ -189,6 +189,8 @@ void Rubik::screw(QString step) {
     } else if (operation == '\'') {
         angle = 90;
     } else if (operation == '2') {
+        angle = -180;
+    } else if (operation == '3') {
         angle = 180;
     }
 
@@ -204,6 +206,9 @@ void Rubik::screw(QString step) {
         } else if (operation == '\'') {
             next = QVector3D::crossProduct(axis, original);
         } else if (operation == '2') {
+            next = QVector3D::crossProduct(axis, original);
+            next = QVector3D::crossProduct(axis, next);
+        } else if (operation == '3') {
             next = QVector3D::crossProduct(axis, original);
             next = QVector3D::crossProduct(axis, next);
         }
@@ -239,6 +244,9 @@ void Rubik::screw(QString step) {
                 } else if (operation == '\'') {
                     next = QVector3D::crossProduct(axis, representation);
                 } else if (operation == '2') {
+                    next = QVector3D::crossProduct(axis, representation);
+                    next = QVector3D::crossProduct(axis, next);
+                } else if (operation == '3') {
                     next = QVector3D::crossProduct(axis, representation);
                     next = QVector3D::crossProduct(axis, next);
                 }
@@ -326,4 +334,118 @@ void Rubik::animationFinished() {
             }
 
     emit screwDone();
+}
+
+void Rubik::setFocusCube(int ord) {
+    m_cubes[ord].setFocus();
+}
+
+void Rubik::cancelFocusCube(int ord) {
+    m_cubes[ord].cancelFocus();
+}
+
+void Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
+    int sideCenterCubes[6];
+    sideCenterCubes[0] = m_position[0][1][1];
+    sideCenterCubes[1] = m_position[1][0][1];
+    sideCenterCubes[2] = m_position[1][1][0];
+    sideCenterCubes[3] = m_position[2][1][1];
+    sideCenterCubes[4] = m_position[1][2][1];
+    sideCenterCubes[5] = m_position[1][1][2];
+
+    QVector3D sideCenterCubesPos[6];
+    for(int i = 0; i < 6; i++) {
+        sideCenterCubesPos[i] = m_cubes[sideCenterCubes[i]].getPosition(m_rotationMatrix);
+    }
+
+    int Ord = -1;
+    double m_min = 100;
+    double m_max = -100;
+    for(int i = 0; i < 6; i++) {
+        if(type == 2) {
+            if(sideCenterCubesPos[i][type] > m_max) {
+                Ord = i;
+                m_max = sideCenterCubesPos[i][type];
+            }
+        }
+        else {
+            if(sideCenterCubesPos[i][type] < m_min) {
+                Ord = i;
+                m_min = sideCenterCubesPos[i][type];
+            }
+        }
+    }
+
+    if(Ord == 0) {
+        for(int k = 0; k < 3; k++) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[k][i * 3 + j] = m_position[k][i][j];
+                }
+            }
+        }
+        layerRecord[0][9] = 0;
+        layerRecord[1][9] = 1;
+        layerRecord[2][9] = 2;
+    }
+    else if(Ord == 1) {
+        for(int k = 0; k < 3; k++) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[k][i * 3 + j] = m_position[i][k][j];
+                }
+            }
+        }
+        layerRecord[0][9] = 3;
+        layerRecord[1][9] = 4;
+        layerRecord[2][9] = 5;
+    }
+    else if(Ord == 2) {
+        for(int k = 0; k < 3; k++) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[k][i * 3 + j] = m_position[i][j][k];
+                }
+            }
+        }
+        layerRecord[0][9] = 6;
+        layerRecord[1][9] = 7;
+        layerRecord[2][9] = 8;
+    }
+    else if(Ord == 3) {
+        for(int k = 2; k >= 0; k--) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[2 - k][i * 3 + j] = m_position[k][i][j];
+                }
+            }
+        }
+        layerRecord[0][9] = 2;
+        layerRecord[1][9] = 1;
+        layerRecord[2][9] = 0;
+    }
+    else if(Ord == 4) {
+        for(int k = 2; k >= 0; k--) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[2 - k][i * 3 + j] = m_position[i][k][j];
+                }
+            }
+        }
+        layerRecord[0][9] = 5;
+        layerRecord[1][9] = 4;
+        layerRecord[2][9] = 3;
+    }
+    else {
+        for(int k = 2; k >= 0; k--) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    layerRecord[2 - k][i * 3 + j] = m_position[i][j][k];
+                }
+            }
+        }
+        layerRecord[0][9] = 8;
+        layerRecord[1][9] = 7;
+        layerRecord[2][9] = 6;
+    }
 }

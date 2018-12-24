@@ -25,11 +25,22 @@ protected:
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 private:
     void initialize();
     void render();
     void renderShadow();
+    void keyUpPressed();
+    void keyRightPressed();
+    void keyDownPressed();
+    void clearLayerRecord();
+    void updateLayerRecord(int type);
+    void setFocusCubes();
+    void cancelFocusCubes();
+    void screwCube(int type, int direction, int angle);
+    void getScrewDirAngle(QPoint delta);
+
 
 private:
     Camera* m_camera;
@@ -45,6 +56,12 @@ private:
     Rubik* m_rubik;
     SkyBox* m_skybox;
     DepthMap* m_depthmap;
+
+    int uping;
+    int righting;
+    int fronting;
+    int index;
+    int layerRecord[3][10];
 
 public slots:
     void unlockKey();

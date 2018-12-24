@@ -29,6 +29,9 @@ public:
     Shader* getShader() const { return m_shader; }
     void rotate(float angle, QVector3D axis);
     void screw(QString step);
+    void setFocusCube(int ord);
+    void cancelFocusCube(int ord);
+    void getLayerRecord(int (&layerRecord)[3][10], int type);
 
 private:
     void createCubes();

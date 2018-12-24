@@ -31,6 +31,9 @@ void Cube::initialize() {
 
     // Model Matrix
     m_modelMatrix.setToIdentity();
+
+    //is Focused
+    m_isFocused = false;
 }
 
 void Cube::createBlock() {
@@ -221,6 +224,7 @@ void Cube::render(QOpenGLShaderProgram* program) {
     setVertexAttribute(program, colorLoc, GL_FLOAT, 3, offset);
     m_pasterBuffer.release();
     program->setUniformValue("isBlock", false);
+    program->setUniformValue("isFocused", m_isFocused);
     glDepthFunc(GL_LEQUAL);
     glDrawArrays(GL_TRIANGLES, 0, 3 * 2 * m_pasters_count);
     glDepthFunc(GL_LESS);
@@ -247,3 +251,15 @@ void Cube::setVertexAttribute(QOpenGLShaderProgram* program, int attribute_locat
     program->setAttributeBuffer(attribute_location, element_type, offset, element_size, sizeof(Vertex));
 }
 
+void Cube::setFocus() {
+    m_isFocused = true;
+}
+
+void Cube::cancelFocus() {
+    m_isFocused = false;
+}
+
+QVector3D Cube::getPosition(QMatrix4x4 m_rotationMatrix) {
+    QMatrix4x4 temp = m_rotationMatrix * m_modelMatrix;
+    return QVector3D(temp.row(0).w(), temp.row(1).w(), temp.row(2).w());
+}
