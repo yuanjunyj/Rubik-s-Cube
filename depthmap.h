@@ -11,7 +11,7 @@
 class DepthMap : protected QOpenGLFunctions
 {
 public:
-    DepthMap(int shadow_width = 2048, int shadow_height = 2048);
+    DepthMap(int shadow_width = 1024, int shadow_height = 1024);
     ~DepthMap();
     Shader* getShader() const { return m_shader; }
     QOpenGLFramebufferObject* getFBO() const { return m_fbo; }

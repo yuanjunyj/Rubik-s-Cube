@@ -23,6 +23,7 @@ public:
 public:
     void setParent(OpenGLWidget* parent);
     void setMaterialType(int type);
+    void togglePasterType();
     void render();
     void renderShadow(QOpenGLShaderProgram *depthProgram);
     Shader* getShader() const { return m_shader; }
@@ -40,7 +41,9 @@ private:
     Shader* m_shader;
     QMatrix4x4 m_rotationMatrix;
     int m_position[3][3][3];
+    int m_color[6][3][3];
     Animation *m_animation;
+    bool m_screwing, m_useColor, m_useImage;
     int m_materialType;
 
 signals:

@@ -26,6 +26,8 @@ private:
 
 public:
     void createBlock();
+    QMatrix4x4 getModelMatrices() const { return m_modelMatrix; }
+    void setModelMatrix(QMatrix4x4 model) { m_modelMatrix = model; }
     void scale(double ratio);
     void translate(QVector3D translation);
     void rotate(int angle, QVector3D axis); // angle should be multiples of 90

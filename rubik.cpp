@@ -7,12 +7,31 @@
 #define CUBE_SUM 27 // 3 * 3 * 3
 #define CUBE_FACES 6
 
+int new_position[3][3][3];
+int new_color[6][3][3];
+int facetMoveTo[6];
+const QVector3D normals[6] = {
+    QVector3D(0, 0, 1),
+    QVector3D(0, 0, -1),
+    QVector3D(0, 1, 0),
+    QVector3D(0, -1, 0),
+    QVector3D(1, 0, 0),
+    QVector3D(-1, 0, 0)
+}; // Same order as Cube::s_facets_order
 
 Rubik::Rubik()
 {
+    m_screwing = false;
+    m_useColor = true;
+    m_useImage = false;
     m_materialType = 0;
     m_rotationMatrix.setToIdentity();
     createCubes();
+    for (int k = 0; k < CUBE_FACES; ++k)
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j) {
+                m_color[k][i][j] = k;
+            }
     m_shader = new Shader;
     m_shader->setupShader("://shader/basic.vert", "://shader/basic.frag");
     QString texture_filenames[6] = {"://texture/bamboo.jpg", "://texture/spiral.jpg", "://texture/wall.jpg", "://texture/flower.jpg" ,"://texture/shining.jpg", "://texture/stone.jpg"};
@@ -35,6 +54,11 @@ void Rubik::setParent(OpenGLWidget* parent) {
 void Rubik::setMaterialType(int type) {
     m_materialType = type;
     m_parent->unlockKey();
+}
+
+void Rubik::togglePasterType() {
+    m_useColor = !m_useColor;
+    m_useImage = !m_useImage;
 }
 
 void Rubik::createCubes() {
@@ -83,20 +107,23 @@ void Rubik::render() {
     program->bind();
     program->setUniformValue("rotationMatrix", m_rotationMatrix);
     program->setUniformValue("material_type", m_materialType);
-    program->setUniformValue("useImage", false);
-    program->setUniformValue("useColor", false);
+    program->setUniformValue("useImage", m_useImage);
+    program->setUniformValue("useColor", m_useColor);
+    program->setUniformValue("focus", false);
     for (int i = 0; i < CUBE_FACES; ++i) {
         const std::string loc = "images[" + std::to_string(i) + "]";
         program->setUniformValue(loc.c_str(), i + 100);
         m_texture[i]->bind(i + 100);
     }
-    program->release();
+
     for (int i = 0; i < CUBE_SUM; ++i) {
         m_cubes[i].render(program);
     }
+
     for (int i = 0; i < CUBE_FACES; ++i) {
         m_texture[i]->release();
     }
+    program->release();
 }
 
 void Rubik::renderShadow(QOpenGLShaderProgram *depthProgram) {
@@ -168,8 +195,36 @@ void Rubik::screw(QString step) {
     // Create animation object
     m_animation = new Animation(this);
     m_animation->setRotationAttributes(angle, axis);
-    // Compute new cube position
-    int new_position[3][3][3];
+
+    // Compute new cube position and facet color;
+    for (int i = 0; i < CUBE_FACES; ++i) {
+        QVector3D original = normals[i], next;
+        if (operation == ' ') {
+            next = QVector3D::crossProduct(original, axis);
+        } else if (operation == '\'') {
+            next = QVector3D::crossProduct(axis, original);
+        } else if (operation == '2') {
+            next = QVector3D::crossProduct(axis, original);
+            next = QVector3D::crossProduct(axis, next);
+        }
+        if (next.x() == 0 && next.y() == 0 && next.z() == 0) {
+            facetMoveTo[i] = i;
+        } else {
+            for (int j = 0; j < CUBE_FACES; ++j) {
+                if (normals[j] == next) {
+                    facetMoveTo[i] = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int k = 0; k < CUBE_FACES; ++k)
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j) {
+                new_color[k][i][j] = m_color[k][i][j];
+            }
+
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
             for (int k = 0; k < 3; ++k) {
@@ -188,19 +243,87 @@ void Rubik::screw(QString step) {
                     next = QVector3D::crossProduct(axis, next);
                 }
                 next += layer_center;
-                int new_x = next.x(), new_y = next.y(), new_z = next.z();
-                new_position[new_x][new_y][new_z] = m_position[i][j][k];
+                int new_i = next.x(), new_j = next.y(), new_k = next.z();
+                new_position[new_i][new_j][new_k] = m_position[i][j][k];
+                for (int f = 0; f < CUBE_FACES; f++) {
+                    int color = -1, new_f = facetMoveTo[f];
+                    switch (f) {
+                    case 0:
+                        if (k == 2) {
+                            color = m_color[f][i][j];
+                        }
+                        break;
+                    case 1:
+                        if (k == 0) {
+                            color = m_color[f][i][j];
+                        }
+                        break;
+                    case 2:
+                        if (j == 2) {
+                            color = m_color[f][i][k];
+                        }
+                        break;
+                    case 3:
+                        if (j == 0) {
+                            color = m_color[f][i][k];
+                        }
+                        break;
+                    case 4:
+                        if (i == 2) {
+                            color = m_color[f][j][k];
+                        }
+                        break;
+                    case 5:
+                        if (i == 0) {
+                            color = m_color[f][j][k];
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                    if (color == -1) {
+                        continue;
+                    }
+                    switch (new_f) {
+                    case 0:
+                    case 1:
+                        new_color[new_f][new_i][new_j] = color;
+                        break;
+                    case 2:
+                    case 3:
+                        new_color[new_f][new_i][new_k] = color;
+                        break;
+                    case 4:
+                    case 5:
+                        new_color[new_f][new_j][new_k] = color;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
                 m_animation->addCube(m_position[i][j][k]);
             }
-    for (int i = 0; i < 3; ++i)
-        for (int j = 0; j < 3; ++j)
-            for (int k = 0; k < 3; ++k) {
-                m_position[i][j][k] = new_position[i][j][k];
-            }
+
+    m_screwing = true;
     m_animation->start();
 }
 
 void Rubik::animationFinished() {
     delete m_animation;
+    m_screwing = false;
+
+    // Apply new position and facet color
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            for (int k = 0; k < 3; ++k) {
+                m_position[i][j][k] = new_position[i][j][k];
+            }
+    for (int k = 0; k < CUBE_FACES; ++k)
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j) {
+                m_color[k][i][j] = new_color[k][i][j];
+            }
+
     emit screwDone();
 }

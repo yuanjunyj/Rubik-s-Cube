@@ -96,8 +96,11 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_3:
         m_rubik->setMaterialType(event->text().toInt());
         break;
+    case Qt::Key_Space:
+        m_rubik->togglePasterType();
+        break;
     default:
-        return;
+        break;
     }
     update();
 }
@@ -143,7 +146,7 @@ void OpenGLWidget::renderShadow() {
     program->setUniformValue("lightViewMatrix", m_depthmap->getLightViewMatrix());
     program->setUniformValue("lightProjectionMatrix", m_depthmap->getLightProjectionMatrix());
     program->release();
-    glViewport(0, 0, m_depthmap->getShadowMapWidth(), m_depthmap->getShadowMapHeight());
+//    glViewport(0, 0, m_depthmap->getShadowMapWidth(), m_depthmap->getShadowMapHeight());
     m_rubik->renderShadow(program);
     glCullFace(GL_BACK);
     FBO->release();

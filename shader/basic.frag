@@ -8,8 +8,10 @@ in vec3 vPos;
 flat in int facetIndex;
 
 uniform vec3 baseColor;
+uniform bool isBlock;
 uniform bool useColor;
 uniform bool useImage;
+uniform bool focus;
 
 uniform vec3 cameraPos;
 uniform sampler2D shadow;
@@ -32,20 +34,20 @@ float unpack(vec4 colour) {
 }
 
 float PCF() {
-    float bias = 0.000005;
+    float bias = 0.001;
     float pcfValue = 0;
     vec4 shadowMapPosition = vShadowCoord / vShadowCoord.w;
     shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
     float currentDepth = shadowMapPosition.z;
     vec2 texelSize = 1.0 / textureSize(shadow, 0);
-    for (int x = -2; x <= 2; ++x) {
-        for (int y = -2; y <= 2; ++y) {
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
             vec4 packedZValue = texture(shadow, shadowMapPosition.st + vec2(x, y) * texelSize);
             float closestDepth = unpack(packedZValue);
             pcfValue += float(currentDepth - bias > closestDepth);
         }
     }
-    pcfValue /= 25.0;
+    pcfValue /= 9.0;
     return pcfValue;
 }
 
@@ -59,21 +61,7 @@ void main()
     vec4 reflectedColor = textureCube(skybox, R);
     vec4 refractedColor = textureCube(skybox, T);
 
-    float shadowColor = 1.0;
-    if (vShadowCoord.w > 0.0) {
-        shadowColor = (1.0 - PCF()) * 0.8 + 0.2;
-    }
-
-    if (useColor == true) {
-        gl_FragColor = vec4(vColor, 1.0);
-    }
-
-    else if (useImage == true) {
-
-        gl_FragColor = texture2D(images[facetIndex], vTexCoord);
-    }
-
-    else {
+    if (isBlock == true) {
         if (material_type == 0) {
             gl_FragColor = vec4(baseColor, 1.0);
         } else if (material_type == 1) {
@@ -84,18 +72,34 @@ void main()
             float fresnel = 0.4 + 0.6 * pow(min(0.0, 1.0 - dot(-I, N)), 4.0);
             gl_FragColor = mix(refractedColor, reflectedColor, fresnel);
         }
+    } else {
+        if (useColor == true) {
+            gl_FragColor = vec4(vColor, 1.0);
+        } else if (useImage == true) {
+            gl_FragColor = texture2D(images[facetIndex], vTexCoord);
+        }
     }
 
     // Shadow
-    gl_FragColor *= shadowColor;
+//    float shadowColor = 1.0;
+//    if (vShadowCoord.w > 0.0) {
+//        shadowColor = (1.0 - PCF()) * 0.8 + 0.2;
+//    }
+//    gl_FragColor *= shadowColor;
+
+    // Focus
+//    if (focus == true) {
+//        gl_FragColor *= 0.5;
+//    }
+
 
     // Phong
     vec3 pL = normalize(vec3(lightPosition - vPos));
     vec3 pV = normalize(cameraPos - vPos);
     vec3 pR = reflect(-pL, normalize(vNormal));
-    float ambient = 0.8;
-    float diffuse = max(dot(pL, normalize(vNormal)), 0.0);
-    float specular = pow(max(dot(pR, pV), 0.0), 100);
+    float ambient = 0.5;
+    float diffuse = 0.2 * max(dot(pL, normalize(vNormal)), 0.0);
+    float specular = 0.3 * pow(max(dot(pR, pV), 0.0), 100);
     float phongColor = diffuse + ambient + specular;
 
     gl_FragColor *= phongColor;

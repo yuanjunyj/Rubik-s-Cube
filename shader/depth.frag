@@ -24,4 +24,5 @@ void main( void )
     float normalizedZ = projectedPosition.z / projectedPosition.w;
     normalizedZ = ( normalizedZ + 1.0 ) / 2.0;
     gl_FragColor = pack( normalizedZ );
+//    gl_FragColor = vec4(vec3(normalizedZ * 8.0), 1.0);
 }
