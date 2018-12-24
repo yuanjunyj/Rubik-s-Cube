@@ -1,5 +1,6 @@
 #include "rubik.h"
 #include "openglwidget.h"
+#include "solver.h"
 #include <QImage>
 
 #define CUBE_LENGTH 1.0
@@ -341,6 +342,7 @@ void Rubik::animationFinished() {
                 m_color[k][i][j] = new_color[k][i][j];
             }
     if (m_screwStepsLeft == 0) {
+        Animation::s_speed = Animation::Speed::Slow;
         emit screwDone();
     } else {
         toScrew();
@@ -491,9 +493,44 @@ bool Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
 
 void Rubik::solve() {
     m_solution.clear();
-    m_solution.push_back("U");
-    m_solution.push_back("L'");
+    RUBIK tmp; // Facet order FBLRUD
+    // Cube::s_facets_order = "FBUDRL";
+    int facet_index[6] = {0, 1, 5, 4, 2, 3};
+    for (int k = 1; k <= CUBE_FACES; ++k) {
+        int facet = facet_index[k - 1];
+        for (int i = 1; i <= 3; ++i)
+            for (int j = 1; j <= 3; ++j) {
+                switch (facet) {
+                case 0:
+                case 3:
+                    tmp.color[k][i][j] = m_color[facet][j - 1][3 - i]; // FD
+                    break;
+                case 5:
+                    tmp.color[k][i][j] = m_color[facet][3 - i][j - 1]; // L
+                    break;
+                case 4:
+                    tmp.color[k][i][j] = m_color[facet][3 - i][3 - j]; // R
+                    break;
+                case 2:
+                case 1:
+                    tmp.color[k][i][j] = m_color[facet][j - 1][i - 1]; // U
+                    break;
+                default:
+                    break;
+                }
+            }
+    }
+    std::string solution = solveCube(tmp);
+    for (unsigned int i = 0; i < solution.length(); ++i) {
+        QString step;
+        step += (char) std::toupper(solution[i]);
+        if (std::islower(solution[i])) {
+            step += '\'';
+        }
+        m_solution.push_back(step);
+    }
     m_screwStepsLeft = m_solution.size();
     current_step = 0;
+    Animation::s_speed = Animation::Speed::Fast;
     toScrew();
 }

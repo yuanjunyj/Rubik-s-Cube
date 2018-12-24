@@ -18,6 +18,13 @@ public:
     void addCube(int cube_index);
     void start();
 
+public:
+    enum Speed {
+        Slow = 0,
+        Fast = 1
+    };
+    static Speed s_speed;
+
 private:
     Rubik* m_rubik;
     int m_angle, m_step, m_current;

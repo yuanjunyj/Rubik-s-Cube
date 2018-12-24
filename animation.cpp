@@ -2,8 +2,11 @@
 #include "rubik.h"
 #include "openglwidget.h"
 
+Animation::Speed Animation::s_speed = Animation::Slow;
+
 Animation::Animation(Rubik* rubik) :
     m_rubik(rubik)
+
 {
     connect(this, SIGNAL(finished()), m_rubik, SLOT(animationFinished()));
 }
@@ -18,12 +21,17 @@ void Animation::addCube(int cube_index) {
 }
 
 void Animation::start() {
-    m_step = m_angle / 45;
     m_current = 0;
     m_timer = new QTimer;
     m_timer->setTimerType(Qt::PreciseTimer);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(animate()));
-    m_timer->start(10);
+    if (s_speed == Slow) {
+        m_step = m_angle / 45;
+        m_timer->start(10);
+    } else if (s_speed == Fast) {
+        m_step = m_angle / 9;
+        m_timer->start(10);
+    }
 }
 
 void Animation::animate() {

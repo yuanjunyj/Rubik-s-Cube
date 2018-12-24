@@ -113,6 +113,12 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_Return:
         m_keyLock = true;
+        cancelFocusCubes();
+        clearLayerRecord();
+        uping = 0;
+        righting = 0;
+        fronting = 0;
+        index = 0;
         m_rubik->solve();
         break;
     default:

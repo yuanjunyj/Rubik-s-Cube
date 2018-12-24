@@ -11,7 +11,7 @@ SOURCES += \
     animation.cpp \
     skybox.cpp \
     depthmap.cpp \
-#    solver.cpp
+    solver.cpp
 
 HEADERS += \
     openglwidget.h \
@@ -23,7 +23,7 @@ HEADERS += \
     animation.h \
     skybox.h \
     depthmap.h \
-#    solver.h
+    solver.h
 
 RESOURCES += \
     shaders.qrc \

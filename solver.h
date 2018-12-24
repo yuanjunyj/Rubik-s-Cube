@@ -10,30 +10,6 @@
 struct RUBIK
 {
 	int color[7][4][4];
-	inline void Print()
-	{
-		printf("0-Red, 1-Green, 2-Blue, 3-Orange, 4-White, 5-Yellow\n\n");
-		for (int i = 1; i <= 6; i += 2)
-		{
-			if (i == 1) printf("Front:    Back:\n");
-			if (i == 3) printf("Left:     Right:\n");
-			if (i == 5) printf("Up:       Down:\n");
-			for (int j = 1; j <= 3; j++)
-			{
-				for (int k = 1; k <= 3; k++)
-				{
-					printf("%d", color[i][j][k]);
-				}
-				printf("       ");
-				for (int k = 1; k <= 3; k++)
-				{
-					printf("%d", color[i + 1][j][k]);
-				}
-				printf("\n");
-			}
-			printf("\n");
-		}
-	}
 };
 
 struct COMMAND
@@ -54,7 +30,7 @@ struct TUPLE
 inline void Rotate_Surface(RUBIK &rubik, int id);
 inline void Rotate_Edge(RUBIK &rubik, int id);
 inline void Update(RUBIK &rubik, int id, int tm);
-inline void Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive);
+inline std::string Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive);
 
 inline int Translate(int a, int b);
 inline int Translate(int a, int b, int c);
@@ -161,9 +137,11 @@ inline void Update(RUBIK &rubik, int id, int tm)
 	}
 }
 
-inline void Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive)
+inline std::string Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive)
 {
     char sigma[] = " FBLRUDHV";
+
+    std::string op;
 
 	for (int k = 0; k < command.length; k++)
 	{
@@ -172,12 +150,12 @@ inline void Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive)
 			if (command.st[k] == sigma[i])
 			{
 				Update(rubik, i, 1);
-				std::cout << opTranslate(i, hActive, vActive);
+                op += opTranslate(i, hActive, vActive);
 			}
 			else if (toupper(command.st[k]) == sigma[i])
 			{
 				Update(rubik, i, 3);
-				std::cout << opTranslate(i + 6, hActive, vActive);
+                op += opTranslate(i + 6, hActive, vActive);
 			}
 		}
 		if (command.st[k] == sigma[7])
@@ -195,6 +173,8 @@ inline void Operation(COMMAND command, RUBIK &rubik, int &hActive, int &vActive)
 			vActive++;
 		}
 	}
+
+    return op;
 }
 
 inline int Translate(int a, int b)
@@ -246,3 +226,13 @@ inline bool Complete(RUBIK &rubik, int k)
 		}
 	return ret;
 }
+
+inline std::string LayerOneCross(RUBIK &rubik);
+inline std::string LayerOneCover(RUBIK &rubik);
+inline std::string LayerTwoCover(RUBIK &rubik);
+inline std::string LayerThreeCross(RUBIK &rubik);
+inline std::string LayerThreeCover(RUBIK &rubik);
+inline std::string CornerAdjustment(RUBIK &rubik);
+inline std::string EdgeAdjustment(RUBIK &rubik);
+
+std::string solveCube(RUBIK& rubik);
