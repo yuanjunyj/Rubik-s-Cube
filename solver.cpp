@@ -3,7 +3,7 @@
 using namespace std;
 
 char ch;
-int hActive = 0, vActive = 0;
+int hActive, vActive;
 
 //FBLRUD
 //012345
@@ -557,6 +557,7 @@ inline std::string Solver::EdgeAdjustment(RUBIK &rubik)
 
 std::string Solver::solve(RUBIK& rubik)
 {
+    hActive = vActive = 0;
     std::string result;
     result += LayerOneCross(rubik);
     result += LayerOneCover(rubik);

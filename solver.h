@@ -55,4 +55,5 @@ private:
 public:
     Solver();
     std::string solve(RUBIK& rubik);
+
 };
