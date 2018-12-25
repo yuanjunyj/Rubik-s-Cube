@@ -29,7 +29,7 @@ void Animation::start() {
         m_step = m_angle / 45;
         m_timer->start(10);
     } else if (s_speed == Fast) {
-        m_step = m_angle / 9;
+        m_step = m_angle / 3;
         m_timer->start(10);
     }
 }

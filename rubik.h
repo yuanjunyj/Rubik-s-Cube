@@ -4,6 +4,7 @@
 #include "cube.h"
 #include "shader.h"
 #include "animation.h"
+#include "solver.h"
 #include <QObject>
 #include <QOpenGLTexture>
 
@@ -52,6 +53,7 @@ private:
     int m_materialType;
     int m_screwStepsLeft;
     std::vector<QString> m_solution;
+    Solver m_solver;
 
 signals:
     void screwDone();

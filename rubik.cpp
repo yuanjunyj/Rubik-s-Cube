@@ -1,6 +1,5 @@
 #include "rubik.h"
 #include "openglwidget.h"
-#include "solver.h"
 #include <QImage>
 
 #define CUBE_LENGTH 1.0
@@ -492,8 +491,7 @@ bool Rubik::getLayerRecord(int (&layerRecord)[3][10], int type) {
 }
 
 void Rubik::solve() {
-    m_solution.clear();
-    RUBIK tmp; // Facet order FBLRUD
+    Solver::RUBIK tmp; // Facet order FBLRUD
     // Cube::s_facets_order = "FBUDRL";
     int facet_index[6] = {0, 1, 5, 4, 2, 3};
     for (int k = 1; k <= CUBE_FACES; ++k) {
@@ -520,7 +518,8 @@ void Rubik::solve() {
                 }
             }
     }
-    std::string solution = solveCube(tmp);
+    std::string solution = m_solver.solve(tmp);
+    m_solution.clear();
     for (unsigned int i = 0; i < solution.length(); ++i) {
         QString step;
         step += (char) std::toupper(solution[i]);
